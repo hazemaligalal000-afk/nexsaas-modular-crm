@@ -1,0 +1,66 @@
+{
+    "name": "SupportTickets",
+    "version": "1.0.0",
+    "description": "Customer Support Inbox with SLAs, Priorities, and Ticket Tracking.",
+    "enabled": true,
+    "permissions": {
+        "Admin": ["view", "create", "edit", "delete", "assign"],
+        "Manager": ["view", "create", "edit", "assign"],
+        "Support": ["view", "create", "edit", "resolve"],
+        "Sales Agent": ["view", "create"]
+    },
+    "database": [
+        {
+            "table": "saas_tickets",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "contact_id", "type": "INT", "foreign_key": "vtiger_contactdetails(id)"},
+                {"name": "assigned_to", "type": "INT", "foreign_key": "vtiger_users(id)", "nullable": true},
+                {"name": "title", "type": "VARCHAR(255)"},
+                {"name": "description", "type": "LONGTEXT"},
+                {"name": "priority", "type": "ENUM('Low', 'Medium', 'High', 'Urgent')", "default": "Medium"},
+                {"name": "status", "type": "ENUM('Open', 'In Progress', 'Waiting on Customer', 'Resolved')", "default": "Open"},
+                {"name": "sla_due_date", "type": "DATETIME", "nullable": true},
+                {"name": "created_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "status"]},
+                {"columns": ["organization_id", "priority"]}
+            ]
+        },
+        {
+            "table": "saas_ticket_replies",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "ticket_id", "type": "INT", "foreign_key": "saas_tickets(id)"},
+                {"name": "responder_id", "type": "INT", "foreign_key": "vtiger_users(id)"},
+                {"name": "reply_text", "type": "LONGTEXT"},
+                {"name": "is_internal_note", "type": "BOOLEAN", "default": false},
+                {"name": "created_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "ticket_id"]}
+            ]
+        }
+    ],
+    "ui": {
+        "navigation": {
+            "label": "Support Inbox",
+            "icon": "life-buoy",
+            "path": "/tickets",
+            "position": 6
+        },
+        "dashboard_widgets": [
+            {"type": "stat", "name": "Open Urgent Tickets", "endpoint": "/api/v1/SupportTickets/stats/urgent"}
+        ]
+    },
+    "events": [
+        "ticket.created",
+        "ticket.assigned",
+        "ticket.status_changed",
+        "ticket.replied",
+        "ticket.sla_breached"
+    ]
+}

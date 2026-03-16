@@ -1,0 +1,12 @@
+{
+  "name": "crm-erpnext-bridge",
+  "version": "1.0.0",
+  "description": "Integration bridge between Custom CRM and ERPNext",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "ioredis": "^5.3.2"
+  }
+}

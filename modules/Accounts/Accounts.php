@@ -1275,7 +1275,7 @@ class Accounts extends CRMEntity {
 		}
 	}
 
-	function getListButtons($app_strings,$mod_strings) {
+	function getListButtons($app_strings, $mod_strings = null) {
 		$list_buttons = Array();
 
 		if(isPermitted('Accounts','Delete','') == 'yes') {

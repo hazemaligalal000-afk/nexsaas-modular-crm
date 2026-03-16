@@ -1,0 +1,38 @@
+{
+    "name": "Partners",
+    "version": "1.0.0",
+    "description": "Master Agency Portal for white-labeling and multi-tenant sub-account management.",
+    "enabled": true,
+    "permissions": {
+        "PartnerAdmin": ["manage_subtenants", "view_revenue_share", "white_label_all"],
+        "PartnerManager": ["view_subtenants", "support_subtenants"]
+    },
+    "database": [
+        {
+            "table": "saas_partners",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "agency_name", "type": "VARCHAR(255)"},
+                {"name": "master_tenant_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "tier", "type": "ENUM('standard', 'gold', 'platinum')", "default": "standard"},
+                {"name": "revenue_share_pct", "type": "DECIMAL(5,2)", "default": 20.00}
+            ]
+        },
+        {
+            "table": "saas_partner_clients",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "partner_id", "type": "INT", "foreign_key": "saas_partners(id)"},
+                {"name": "client_tenant_id", "type": "INT", "unique": true}
+            ]
+        }
+    ],
+    "ui": {
+        "navigation": {
+            "label": "Agency Portal",
+            "icon": "users",
+            "path": "/partnership",
+            "position": 1
+        }
+    }
+}

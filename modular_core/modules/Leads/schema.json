@@ -1,0 +1,26 @@
+{
+    "name": "Leads",
+    "version": "1.0.0",
+    "description": "Core Sales Lead Management, captures incoming form data and Webhooks.",
+    "enabled": true,
+    "permissions_required": ["Sales Agent", "Manager", "Admin"],
+    "database": {
+        "table": "saas_leads",
+        "columns": [
+            {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+            {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+            {"name": "first_name", "type": "VARCHAR(100)"},
+            {"name": "last_name", "type": "VARCHAR(100)"},
+            {"name": "email", "type": "VARCHAR(255)", "unique": false},
+            {"name": "lead_status", "type": "ENUM('New', 'Contacted', 'Qualified', 'Lost')", "default": "New"}
+        ],
+        "indexes": [
+            {"columns": ["organization_id", "email"]}
+        ]
+    },
+    "webhooks": [
+        "lead.created",
+        "lead.updated",
+        "lead.status_changed"
+    ]
+}

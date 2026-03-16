@@ -1,0 +1,57 @@
+{
+    "name": "Workflows",
+    "version": "1.0.0",
+    "description": "Visual rule-based automation engine mapping triggers, conditions, and generic actions.",
+    "enabled": true,
+    "permissions": {
+        "Admin": ["view", "create", "edit", "delete", "test"],
+        "Manager": ["view", "create", "edit", "test"],
+        "Sales Agent": ["view"]
+    },
+    "database": [
+        {
+            "table": "saas_workflows",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "name", "type": "VARCHAR(255)"},
+                {"name": "description", "type": "TEXT", "nullable": true},
+                {"name": "trigger_event", "type": "VARCHAR(100)"},
+                {"name": "is_active", "type": "BOOLEAN", "default": true},
+                {"name": "execution_count", "type": "INT", "default": 0},
+                {"name": "created_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "trigger_event"]}
+            ]
+        },
+        {
+            "table": "saas_workflow_steps",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "workflow_id", "type": "INT", "foreign_key": "saas_workflows(id)"},
+                {"name": "step_order", "type": "INT", "default": 1},
+                {"name": "step_type", "type": "ENUM('Condition', 'Action', 'Delay')", "default": "Action"},
+                {"name": "action_type", "type": "VARCHAR(100)", "nullable": true},
+                {"name": "config_payload", "type": "JSON", "nullable": true}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "workflow_id"]}
+            ]
+        }
+    ],
+    "ui": {
+        "navigation": {
+            "label": "Automations",
+            "icon": "share-2",
+            "path": "/workflows",
+            "position": 9
+        }
+    },
+    "events": [
+        "workflow.created",
+        "workflow.executed",
+        "workflow.failed"
+    ]
+}

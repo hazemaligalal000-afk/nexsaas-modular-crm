@@ -1,0 +1,39 @@
+{
+    "name": "Analytics",
+    "version": "1.0.0",
+    "description": "Real-time, actionable intelligence at every level with KPIs and Executive Dashboards.",
+    "enabled": true,
+    "permissions": {
+        "Admin": ["view", "create_report", "export", "manage_dashboards"],
+        "Manager": ["view", "create_report", "export"],
+        "Sales Agent": ["view_personal"]
+    },
+    "database": [
+        {
+            "table": "saas_custom_dashboards",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "name", "type": "VARCHAR(255)"},
+                {"name": "layout_config", "type": "JSON"},
+                {"name": "is_public", "type": "BOOLEAN", "default": false},
+                {"name": "created_by", "type": "INT", "foreign_key": "vtiger_users(id)"}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "created_by"]}
+            ]
+        }
+    ],
+    "ui": {
+        "navigation": {
+            "label": "Live Analytics",
+            "icon": "bar-chart-2",
+            "path": "/analytics",
+            "position": 2
+        }
+    },
+    "events": [
+        "dashboard.created",
+        "report.exported"
+    ]
+}

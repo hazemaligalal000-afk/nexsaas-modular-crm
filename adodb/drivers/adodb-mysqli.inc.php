@@ -27,6 +27,9 @@ if (! defined("_ADODB_MYSQLI_LAYER")) {
  global $ADODB_EXTENSION; $ADODB_EXTENSION = false;
 
 class ADODB_mysqli extends ADOConnection {
+	function __construct() {
+	}
+
 	var $databaseType = 'mysqli';
 	var $dataProvider = 'native';
 	var $hasInsertID = true;
@@ -283,7 +286,7 @@ class ADODB_mysqli extends ADOConnection {
 	}
 
 	  
-	function &MetaIndexes ($table, $primary = FALSE)
+	function &MetaIndexes ($table, $primary = FALSE, $owner = false)
 	{
 		// save old fetch mode
 		global $ADODB_FETCH_MODE;
@@ -494,7 +497,7 @@ class ADODB_mysqli extends ADOConnection {
 	    return  $foreign_keys;
 	}
 	
- 	function &MetaColumns($table) 
+ 	function &MetaColumns($table, $normalize = true) 
 	{
 		$false = false;
 		if (!$this->metaColumnsSQL)
@@ -732,6 +735,10 @@ class ADORecordSet_mysqli extends ADORecordSet{
 	
 	var $databaseType = "mysqli";
 	var $canSeek = true;
+	
+	function __construct($queryID, $mode = false) {
+		$this->ADORecordSet_mysqli($queryID, $mode);
+	}
 	
 	function ADORecordSet_mysqli($queryID, $mode = false) 
 	{

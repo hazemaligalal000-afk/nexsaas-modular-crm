@@ -339,7 +339,7 @@ class HelpDesk extends CRMEntity {
 						)
 		where $i=0,1,..n & key = ticketid, title, firstname, ..etc(range_fields) & val = value of the key from db retrieved row
 	**/
-	function process_list_query($query)
+	function process_list_query($query, $row_offset = 0, $limit = -1, $max_per_page = -1)
 	{
 		global $log;
 		$log->debug("Entering process_list_query(".$query.") method ...");

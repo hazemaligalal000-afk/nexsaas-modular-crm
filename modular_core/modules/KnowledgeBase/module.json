@@ -1,0 +1,58 @@
+{
+    "name": "KnowledgeBase",
+    "version": "1.0.0",
+    "description": "Internal and external Knowledge Base with articles, categories, tags, and analytics.",
+    "enabled": true,
+    "permissions": {
+        "Admin": ["view", "create", "edit", "delete"],
+        "Manager": ["view", "create", "edit"],
+        "Support": ["view", "create", "edit"],
+        "Sales Agent": ["view"]
+    },
+    "database": [
+        {
+            "table": "saas_kb_categories",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "name", "type": "VARCHAR(100)"},
+                {"name": "description", "type": "TEXT", "nullable": true}
+            ],
+            "indexes": [{"columns": ["organization_id"]}]
+        },
+        {
+            "table": "saas_kb_articles",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "category_id", "type": "INT", "foreign_key": "saas_kb_categories(id)"},
+                {"name": "title", "type": "VARCHAR(255)"},
+                {"name": "content", "type": "LONGTEXT"},
+                {"name": "status", "type": "ENUM('Draft', 'Published', 'Archived')", "default": "Draft"},
+                {"name": "author_id", "type": "INT", "foreign_key": "vtiger_users(id)"},
+                {"name": "views", "type": "INT", "default": 0},
+                {"name": "created_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "status"]},
+                {"columns": ["organization_id", "category_id"]}
+            ]
+        }
+    ],
+    "ui": {
+        "navigation": {
+            "label": "Knowledge Base",
+            "icon": "book-open",
+            "path": "/kb",
+            "position": 5
+        },
+        "dashboard_widgets": [
+            {"type": "chart", "name": "Top Viewed Articles", "endpoint": "/api/v1/KnowledgeBase/analytics/views"}
+        ]
+    },
+    "events": [
+        "kb.article.created",
+        "kb.article.updated",
+        "kb.article.published"
+    ]
+}

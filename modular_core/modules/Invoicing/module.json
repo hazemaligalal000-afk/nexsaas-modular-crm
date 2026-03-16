@@ -1,0 +1,71 @@
+{
+    "name": "Invoicing",
+    "version": "1.0.0",
+    "description": "Invoice generator, billing workflows, payment status trackers, and tax configurator.",
+    "enabled": true,
+    "permissions": {
+        "Admin": ["view", "create", "edit", "delete", "send_invoice", "void"],
+        "Manager": ["view", "create", "edit", "send_invoice"],
+        "Sales Agent": ["view", "create"]
+    },
+    "database": [
+        {
+            "table": "saas_invoices",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "contact_id", "type": "INT", "foreign_key": "vtiger_contactdetails(id)", "nullable": true},
+                {"name": "deal_id", "type": "INT", "foreign_key": "vtiger_potential(id)", "nullable": true},
+                {"name": "invoice_number", "type": "VARCHAR(50)"},
+                {"name": "issue_date", "type": "DATE"},
+                {"name": "due_date", "type": "DATE"},
+                {"name": "subtotal", "type": "DECIMAL(10,2)", "default": 0.00},
+                {"name": "tax_amount", "type": "DECIMAL(10,2)", "default": 0.00},
+                {"name": "discount_amount", "type": "DECIMAL(10,2)", "default": 0.00},
+                {"name": "total_amount", "type": "DECIMAL(10,2)", "default": 0.00},
+                {"name": "currency", "type": "VARCHAR(3)", "default": "USD"},
+                {"name": "status", "type": "ENUM('Draft', 'Sent', 'Viewed', 'Paid', 'Overdue', 'Voided')", "default": "Draft"},
+                {"name": "payment_method", "type": "VARCHAR(50)", "nullable": true},
+                {"name": "created_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "status"]},
+                {"columns": ["organization_id", "invoice_number"]}
+            ]
+        },
+        {
+            "table": "saas_invoice_items",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "invoice_id", "type": "INT", "foreign_key": "saas_invoices(id)"},
+                {"name": "product_id", "type": "INT", "foreign_key": "saas_products(id)", "nullable": true},
+                {"name": "description", "type": "VARCHAR(255)"},
+                {"name": "quantity", "type": "INT", "default": 1},
+                {"name": "unit_price", "type": "DECIMAL(10,2)", "default": 0.00},
+                {"name": "line_total", "type": "DECIMAL(10,2)", "default": 0.00}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "invoice_id"]}
+            ]
+        }
+    ],
+    "ui": {
+        "navigation": {
+            "label": "Invoices",
+            "icon": "file-text",
+            "path": "/invoices",
+            "position": 8
+        },
+        "dashboard_widgets": [
+            {"type": "metric", "name": "Overdue Invoices", "endpoint": "/api/v1/Invoicing/metrics/overdue"}
+        ]
+    },
+    "events": [
+        "invoice.created",
+        "invoice.sent",
+        "invoice.viewed",
+        "invoice.paid",
+        "invoice.overdue"
+    ]
+}

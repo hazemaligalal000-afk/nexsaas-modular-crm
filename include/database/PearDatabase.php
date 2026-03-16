@@ -16,9 +16,13 @@
 require_once('include/logging.php');
 include('adodb/adodb.inc.php');
 require_once("adodb/adodb-xmlschema.inc.php");
+require_once("include/TenantHelper.php");
 
 $log =& LoggerManager::getLogger('VT');
 $logsqltm =& LoggerManager::getLogger('SQLTIME');
+
+// Initialize Tenant Context for Multi-Company isolation
+TenantHelper::init();
 
 // Callback class useful to convert PreparedStatement Question Marks to SQL value
 // See function convertPS2Sql in PearDatabase below
@@ -390,6 +394,8 @@ class PearDatabase{
 
 	$this->executeSetNamesUTF8SQL();
 
+	$sql = TenantHelper::isolateQuery($sql);
+
 	$sql_start_time = microtime(true);
 	$result = & $this->database->Execute($sql);
 	$this->logSqlTiming($sql_start_time, microtime(true), $sql);
@@ -454,6 +460,8 @@ class PearDatabase{
 		$this->checkConnection();
 
 		$this->executeSetNamesUTF8SQL();
+
+		$sql = TenantHelper::isolateQuery($sql);
 
 		$sql_start_time = microtime(true);
 		$params = $this->flatten_array($params);
@@ -662,15 +670,15 @@ class PearDatabase{
 
     function sql_quote($data) {
 		if (is_array($data)) {
-			switch($data{'type'}) {
+			switch($data['type']) {
 			case 'text':
 			case 'numeric':
 			case 'integer':
 			case 'oid':
-				return $this->quote($data{'value'});
+				return $this->quote($data['value']);
 				break;
 			case 'timestamp':
-				return $this->formatDate($data{'value'});
+				return $this->formatDate($data['value']);
 				break;
 			default:
 				throw new Exception("unhandled type: ".serialize($cur));
@@ -725,7 +733,7 @@ class PearDatabase{
     function run_query_field($query,$field='') {
 	    $rowdata = $this->run_query_record($query);
 	    if(isset($field) && $field != '')
-	    	return $rowdata{$field};
+	    	return $rowdata[$field];
 	    else
 	    	return array_shift($rowdata);
     }
@@ -733,7 +741,7 @@ class PearDatabase{
     function run_query_list($query,$field){
 	    $records = $this->run_query_allrecords($query);
 	    foreach($records as $walk => $cur)
-			$list[] = $cur{$field};
+			$list[] = $cur[$field];
     }
 
     function run_query_field_html($query,$field){
@@ -766,7 +774,7 @@ class PearDatabase{
 	    	throw new Exception("empty arrays not allowed");
 
 	    foreach($a as $walk => $cur)
-	    	$l .= ($l?',':'').$this->quote($cur{$field});
+	    	$l .= ($l?',':'').$this->quote($cur[$field]);
 
 	    return ' ( '.$l.' ) ';
     }
@@ -932,7 +940,7 @@ class PearDatabase{
 	/**
 	 * Constructor
 	 */
-    function PearDatabase($dbtype='',$host='',$dbname='',$username='',$passwd='') {
+    function __construct($dbtype='',$host='',$dbname='',$username='',$passwd='') {
 		global $currentModule;
 		$this->log =& LoggerManager::getLogger('PearDatabase_'. $currentModule);
 		$this->resetSettings($dbtype,$host,$dbname,$username,$passwd);

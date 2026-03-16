@@ -1,0 +1,24 @@
+{
+    "editions": [
+        {
+            "id": "real_estate",
+            "name": "Real Estate Pro",
+            "description": "Customized fields for listings, property types, and commission splits.",
+            "modules": ["KnowledgeBase", "Workflows", "Analytics"],
+            "custom_fields": {
+                "Properties": ["Listing Price", "Square Footage", "Property Type", "Zoning"],
+                "Contacts": ["Buyer Profile", "Investor Status"]
+            }
+        },
+        {
+            "id": "saas_sales",
+            "name": "SaaS Growth Edition",
+            "description": "Optimized for high-velocity SaaS sales with MRR tracking and churn alerts.",
+            "modules": ["Analytics", "Invoicing", "Workflows"],
+            "custom_fields": {
+                "Deals": ["MRR Impact", "Contract Term", "Seat Count"],
+                "Accounts": ["Usage Intensity", "Renewal Date"]
+            }
+        }
+    ]
+}

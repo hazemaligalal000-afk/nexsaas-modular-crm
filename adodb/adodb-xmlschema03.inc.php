@@ -157,7 +157,6 @@ class dbObject {
 	function _tag_cdata( &$parser, $cdata ) {
 		
 	}
-	
 	/**
 	* XML Callback to process end elements
 	*
@@ -175,7 +174,6 @@ class dbObject {
 	* Destroys the object
 	*/
 	function destroy() {
-		unset( $this );
 	}
 	
 	/**
@@ -401,7 +399,7 @@ class dbTable extends dbObject {
 	*/
 	function &addIndex( $attributes ) {
 		$name = strtoupper( $attributes['NAME'] );
-		$this->indexes[$name] =& new dbIndex( $this, $attributes );
+		$this->indexes[$name] = new dbIndex( $this, $attributes );
 		return $this->indexes[$name];
 	}
 	
@@ -413,7 +411,7 @@ class dbTable extends dbObject {
 	*/
 	function &addData( $attributes ) {
 		if( !isset( $this->data ) ) {
-			$this->data =& new dbData( $this, $attributes );
+			$this->data = new dbData( $this, $attributes );
 		}
 		return $this->data;
 	}
@@ -2370,7 +2368,6 @@ class adoSchema {
 	*/
 	function Destroy() {
 		set_magic_quotes_runtime( $this->mgq );
-		unset( $this );
 	}
 }
 

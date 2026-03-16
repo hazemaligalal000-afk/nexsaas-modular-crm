@@ -1,0 +1,58 @@
+{
+    "name": "Products",
+    "version": "1.0.0",
+    "description": "Product catalog, SKU management, pricing tiers, and inventory tracking.",
+    "enabled": true,
+    "permissions": {
+        "Admin": ["view", "create", "edit", "delete"],
+        "Manager": ["view", "create", "edit"],
+        "Sales Agent": ["view"],
+        "Support": ["view"]
+    },
+    "database": [
+        {
+            "table": "saas_product_categories",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "name", "type": "VARCHAR(150)"},
+                {"name": "parent_id", "type": "INT", "nullable": true}
+            ],
+            "indexes": [{"columns": ["organization_id"]}]
+        },
+        {
+            "table": "saas_products",
+            "columns": [
+                {"name": "id", "type": "INT", "auto_increment": true, "primary_key": true},
+                {"name": "organization_id", "type": "INT", "foreign_key": "saas_organizations(id)"},
+                {"name": "category_id", "type": "INT", "foreign_key": "saas_product_categories(id)", "nullable": true},
+                {"name": "sku", "type": "VARCHAR(100)", "unique": false},
+                {"name": "name", "type": "VARCHAR(255)"},
+                {"name": "description", "type": "TEXT", "nullable": true},
+                {"name": "price", "type": "DECIMAL(10,2)", "default": 0.00},
+                {"name": "currency", "type": "VARCHAR(3)", "default": "USD"},
+                {"name": "stock_quantity", "type": "INT", "default": 0},
+                {"name": "is_active", "type": "BOOLEAN", "default": true},
+                {"name": "created_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+            ],
+            "indexes": [
+                {"columns": ["organization_id", "sku"]},
+                {"columns": ["organization_id", "category_id"]}
+            ]
+        }
+    ],
+    "ui": {
+        "navigation": {
+            "label": "Products Catalog",
+            "icon": "box",
+            "path": "/products",
+            "position": 7
+        }
+    },
+    "events": [
+        "product.created",
+        "product.updated",
+        "inventory.low_stock",
+        "inventory.depleted"
+    ]
+}
