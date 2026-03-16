@@ -1,0 +1,19 @@
+{
+    "name": "Omnichannel",
+    "version": "1.0.0",
+    "description": "Unified messaging inbox across WhatsApp, Telegram, Email, and SMS.",
+    "enabled": true,
+    "permissions": {
+        "Admin": ["manage_channels", "view_inbox"],
+        "Sales_Agent": ["view_inbox", "send_messages"],
+        "Support_Agent": ["view_inbox", "send_messages"]
+    },
+    "ui": {
+        "navigation": {
+            "label": "Inbox",
+            "icon": "message-circle",
+            "path": "/inbox",
+            "position": 20
+        }
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "name": "Auth",
+    "version": "1.0.0",
+    "description": "JSON Web Token (JWT) Authentication System.",
+    "enabled": true,
+    "permissions": {
+        "Public": ["login", "refresh"]
+    },
+    "ui": {
+        "navigation": {
+            "hidden": true
+        }
+    }
+}

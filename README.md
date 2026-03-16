@@ -1,87 +1,96 @@
-# NexSaaS Modular CRM - Enterprise Edition 🚀
+# 🚀 AI Revenue Operating System (Enterprise SaaS)
 
-An enterprise-grade, multi-tenant SaaS CRM platform built on an advanced modular architecture. It leverages a custom PHP Core for extreme scaling, database isolation per tenant, and a modern React frontend for lightning-fast user experiences.
-
----
-
-## 🏗️ System Architecture
-
-Our newly designed modular core fundamentally transforms the traditional CRM monolithic structure into a scalable, Tenant-Aware cloud application using the **Control Plane Data Model**.
-
-- **Multi-Tenant Global Resolvers:** `TenantEnforcer` & `TenantResolver` handle requests dynamically securely injecting tenant contexts via API Key or subdomain.
-- **Data Isolation Strategies:** Natively supports both **Shared Database** (scoped by `organization_id`) and **Dedicated Database** environments based on subscription level.
-- **Dynamic Module Manager:** Bootstraps domain-driven logic (Leads, Contacts, Invoicing) individually ensuring robust security and role-based access.
-
-### 🗂️ Core Technology Stack
-- **Backend Core**: Custom PHP Modular MVC (Fast, Lightweight)
-- **Frontend SPA**: React 18 & Vite (`modular_core/react-frontend`)
-- **Database Layer**: Robust multi-tenant schema via PostgreSQL/MySQL
-- **Containerization**: Fully Dockerized environments (`docker-compose`)
+## 📌 Project Overview
+The **AI Revenue Operating System** is a next-generation, multi-tenant CRM platform integrating predictive AI, omnichannel communication, and enterprise-grade RBAC. It is designed to scale to thousands of tenants with absolute data isolation and high-performance throughput.
 
 ---
 
-## 🚀 Getting Started
-
-### Prerequisites
-- PHP 8.2+
-- Composer
-- Node.js & npm / yarn (for the React Frontend)
-- Relational Database (MySQL 8.0 or PostgreSQL)
-- Docker & Docker Compose (Optional but Recommended)
-
-### Local Setup & Installation
-
-1. **Database Initialization**
-   Run the `modular_core/database/setup_saas.sql` script into your primary database. This initializes the global SaaS tables (`tenants`, `saas_api_keys`) and the sample tenant data.
-
-2. **React Frontend Quickstart**
-   ```bash
-   cd modular_core/react-frontend
-   npm install
-   npm run dev
-   ```
-
-3. **Backend API Environment**
-   Direct requests to the unified API entry point:
-   ```bash
-   cd modular_core
-   php -S localhost:8080 -t public/
-   ```
+## 🛠 Tech Stack
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **Backend Core** | PHP 8.3 (Modular MVC) | Business logic & API orchestration |
+| **AI Workloads** | Python FastAPI | Scoring, intent detection, & LLM generation |
+| **Frontend** | React 18 / Vite | Modern SaaS Dashboard (RBAC-aware) |
+| **Primary DB** | PostgreSQL 16 / MySQL | Polyglot support (Multi-tenant schema) |
+| **Caching** | Redis 7 | Permission caching & session management |
+| **Async Jobs** | RabbitMQ / Celery | Enrichment & Webhook processing |
+| **Infrastructure** | Docker & Kubernetes | Containerized orchestration |
 
 ---
 
-## 🧩 Exploring the Leads Module
+## 🏗 Key Features
 
-We have deployed a reference module (`Modules/Leads`) that implements our new multi-tenant architecture perfectly:
-1. `module.json`: Defines routes, navigation config, and RBAC permissions.
-2. `ApiController.php`: Features native `TenantEnforcer` injections verifying clients only touch their own data.
+### 1. Multi-Tenant Mastery
+- **Hybrid DB Strategy**: Shared database pool for SMEs; Dedicated isolated DB clusters for Enterprise clients.
+- **Tenant Context Propagator**: Mandatory resolution of `tenant_id` at the kernel level for DB, Cache, and Queues.
 
-Make a test request to your local API:
-```bash
-curl -X GET http://localhost:8080/api/leads \
-  -H "X-API-Key: demo_tenant_key_123"
+### 2. Radical RBAC (Role-Based Access Control)
+- **Granular Permissions**: 5 default roles (Owner, Admin, Manager, Agent, Support) with a merged permission matrix.
+- **Tenant-Extendable**: Companies can define custom roles with specific feature-flags.
+- **Cache-Optimized**: Permissions are cached in Redis and invalidated globally upon role updates.
+
+### 3. AI Intelligence Engine
+- **Lead Scoring**: Predictive probablity of conversion.
+- **Intent Discovery**: Real-time NLP detection of "Buying Intent" or "Churn Risk" in chat.
+- **Content Gen**: Automated context-aware email and WhatsApp drafting.
+
+### 4. Omnichannel Unified Inbox
+- **Meta Integrations**: Direct receivers for WhatsApp Business and Telegram.
+- **Background Processing**: Webhooks are ingested and queued instantly, keeping the API fast.
+
+---
+
+## 📂 Project Structure
+```text
+/
+├── ai_engine/               # Python FastAPI Microservice
+│   ├── main.py              # AI Endpoints (Scoring, NLP, Forecasting)
+│   ├── requirements.txt
+│   └── Dockerfile
+├── modular_core/            # PHP Backend Core
+│   ├── core/                # System Level (Auth, DB, RBAC, Queue)
+│   ├── modules/             # SaaS Modules (Leads, Billing, Analytics)
+│   ├── public/api/          # API Gateway
+│   └── database/            # Schema Migrations
+├── react-frontend/          # React Dashboard
+│   ├── src/core/            # AuthContext & RBAC Hooks
+│   ├── src/modules/         # Permission-aware UI Components
+└── docker-compose.yml       # Full Stack Orchestration
 ```
 
 ---
 
-## 🚧 What's Missing / Next Iterations (Roadmap)
+## 🚀 Deployment (Production Ready)
 
-To fully transition this into a massive enterprise powerhouse, the following areas require development:
+### 1. Requirements
+- Docker & Docker Compose
+- SSL Certificate (for Meta Webhooks)
 
-### 1. **Robust Authentication & RBAC Sync**
-- Ensure OAuth2 flow (via Laravel Passport or a JWT implementation) replaces the simplified API-Key mapping currently in place.
+### 2. Fast Launch (Development)
+```bash
+# Clone the repository
+git clone https://github.com/hazemaligalal000-afk/nexsaas-modular-crm.git
+cd nexsaas-modular-crm
 
-### 2. **AI Engine Integration (Python API)**
-- Complete the local AI Engine (FastAPI microservice in `/ai_engine`) to offer:
-  - **Machine Learning Lead Scoring:** Predicting Deal closures.
-  - **Creative Copy Assistant:** Generating cold emails.
+# Set environment variables (.env)
+cp .env.example .env
 
-### 3. **Omnichannel Comms Service**
-- Integrate Telegram unified inbox and Whatsapp Business API webhook receivers.
-- Inject the **Truecaller Data Enrichment** logic to automatically tag and name unknown incoming leads.
+# Build and Start
+docker-compose up --build -d
+```
 
-### 4. **Stripe Billing Module**
-- Develop a standalone `Subscriptions` module linking SaaS Tenants to Stripe Webhooks for automatic downgrades/suspensions on failed payments.
+### 3. Kubernetes (SaaS Scale)
+The project includes K8s manifests for:
+- **Autoscaling PHP-FPM pods** based on CPU/RAM metrics.
+- **Python AI deployments** with custom horizontal pod autoscalers (HPA).
+- **Persistent Volume Claims (PVC)** for isolated DB storage.
 
-### 5. **Hybrid DB Connections**
-- Finalize the `Database.php` routing logic to dynamically switch MySQL PDO connections for Enterprise clients who pay for **Dedicated Server** resources.
+---
+
+## ⚠️ Roadmap & Missing Pieces
+- [ ] **Data Lake Integration**: Exporting anonymized tenant data to BigQuery/Snowflake for global training.
+- [ ] **Pusher/WebSockets**: Implement real-time notifications for the Unified Inbox.
+- [ ] **Stripe Advanced Billing**: Implementing Tax/VAT compliance for global SaaS sales.
+
+---
+**hazem ali galal | 2026**

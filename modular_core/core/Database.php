@@ -10,49 +10,67 @@ use PDO;
 use PDOException;
 
 class Database {
-    private static $instance = null;
+    private static $centralInstance = null;
+    private static $tenantInstance = null;
 
     /**
-     * Get the singleton PDO connection
+     * Get the connection to the Central (Control Plane) Database.
      */
-    public static function getConnection() {
-        if (self::$instance === null) {
+    public static function getCentralConnection() {
+        if (self::$centralInstance === null) {
             try {
-                // In a real environment, we would load these from config.db.php or env
-                // For this demo, we'll use the values found in the root config.inc.php
-                // Note: Path depends on where this is called from, better to use absolute or defined constants.
+                // Production: Load from ENV / Secret Manager
                 $host = 'db';
-                $db   = 'crm_db';
+                $db   = 'crm_db'; 
                 $user = 'crm_user';
                 $pass = 'crm_secret';
-                $port = '3306';
-                $charset = 'utf8mb4';
-
-                $dsn = "mysql:host=$host;dbname=$db;port=$port;charset=$charset";
-                $options = [
-                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES   => false,
-                ];
-
-                self::$instance = new PDO($dsn, $user, $pass, $options);
+                
+                $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+                self::$centralInstance = new PDO($dsn, $user, $pass, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                ]);
             } catch (PDOException $e) {
-                throw new \Exception("Database Connection Error: " . $e->getMessage());
+                throw new \Exception("Central DB Connection Error");
             }
         }
-        return self::$instance;
+        return self::$centralInstance;
     }
 
     /**
-     * Helper to run a scoped query automatically
+     * Get the connection for the current Tenant context.
+     * Switches dynamically between Shared Pool and Dedicated Client DB.
+     */
+    public static function getConnection() {
+        if (self::$tenantInstance !== null) return self::$tenantInstance;
+
+        $config = TenantEnforcer::getTenantConfig();
+        
+        if (($config['db_strategy'] ?? 'shared') === 'dedicated') {
+            // Dedicated Mode: Connect to the client's private database server
+            $dbConf = json_decode($config['db_config'], true);
+            try {
+                $dsn = "mysql:host={$dbConf['host']};dbname={$dbConf['dbname']};charset=utf8mb4";
+                self::$tenantInstance = new PDO($dsn, $dbConf['user'], $dbConf['pass'], [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                ]);
+            } catch (PDOException $e) {
+                throw new \Exception("Dedicated Tenant DB Connection Error");
+            }
+        } else {
+            // Shared Mode: Re-use the Central connection as the Pool
+            self::$tenantInstance = self::getCentralConnection();
+        }
+
+        return self::$tenantInstance;
+    }
+
+    /**
+     * Helper to run a tenant-scoped query automatically.
      */
     public static function query($sql, $params = []) {
         $pdo = self::getConnection();
-        
-        // Proactively apply tenant scoping if TenantEnforcer is initialized
-        if (class_exists('Core\TenantEnforcer')) {
-            $sql = \Core\TenantEnforcer::scopeQuery($sql);
-        }
+        $sql = TenantEnforcer::scopeQuery($sql);
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);

@@ -14,22 +14,15 @@ header("Content-Type: application/json");
 
 try {
     // 1. Authenticate Identity & Register Tenant Context globally
-    $headers = apache_request_headers();
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
     
-    // In a production environment, headers are strictly required.
-    // For local testing, we can keep the demo key if not provided.
-    if (!isset($headers['X-API-Key'])) {
-        $headers['X-API-Key'] = 'demo_tenant_key_123';
-    }
-    
-    // Authenticate and set the global organization context
-    TenantEnforcer::initializeFromHeader($headers);
-    $currentTenantId = TenantEnforcer::getTenantId();
+    // Authenticate and set the global organization context (JWT-aware)
+    TenantEnforcer::initializeFromToken($authHeader);
 
     // 2. Initialize Module Manager
     // Finds and bootstraps /modules/Leads/, /modules/Deals/, etc.
     $moduleManager = new ModuleManager(realpath(__DIR__ . '/../../modules'));
-    $moduleManager->loadActiveModules($currentTenantId);
+    $moduleManager->loadActiveModules(TenantEnforcer::getTenantId());
 
     // 3. Dispatch the API Request cleanly to the respective modular Controller
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
