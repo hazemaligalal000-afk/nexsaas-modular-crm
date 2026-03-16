@@ -4,28 +4,42 @@
  * Unified Entrypoint Router for the entire SaaS Custom Modular CRM.
  */
 
-require_once '../../core/TenantEnforcer.php';
-require_once '../../core/ModuleManager.php';
+// --- 1. Basic PSR-4 Autoloader Shim ---
+spl_autoload_register(function ($class) {
+    $prefix = '';
+    $base_dir = __DIR__ . '/../../';
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) return;
+    $relative_class = substr($class, $len);
+    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+    if (file_exists($file)) require $file;
+});
 
 use Core\TenantEnforcer;
 use Core\ModuleManager;
 
+// --- 2. Security & CORS ---
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Content-Type: application/json");
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
 try {
-    // 1. Authenticate Identity & Register Tenant Context globally
+    // 3. Authenticate Identity & Register Tenant Context
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-    
-    // Authenticate and set the global organization context (JWT-aware)
     TenantEnforcer::initializeFromToken($authHeader);
 
-    // 2. Initialize Module Manager
-    // Finds and bootstraps /modules/Leads/, /modules/Deals/, etc.
+    // 4. Initialize Module Manager
     $moduleManager = new ModuleManager(realpath(__DIR__ . '/../../modules'));
     $moduleManager->loadActiveModules(TenantEnforcer::getTenantId());
 
-    // 3. Dispatch the API Request cleanly to the respective modular Controller
-    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    // 5. Dispatch API Request
+    // Remove /api/ prefix if present from URI path
+    $uri = str_replace('/api/', '/', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
     $method = $_SERVER['REQUEST_METHOD'];
 
     $response = $moduleManager->dispatchApiRequest($method, $uri);
@@ -35,7 +49,7 @@ try {
 } catch (\Exception $e) {
     http_response_code($e->getCode() ?: 500);
     echo json_encode([
-        'status' => 'error',
-        'message' => $e->getMessage()
+        'success' => false,
+        'error' => $e->getMessage()
     ]);
 }

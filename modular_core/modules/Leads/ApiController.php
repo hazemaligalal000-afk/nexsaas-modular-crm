@@ -8,48 +8,48 @@ namespace Modules\Leads;
 
 use Core\Database;
 use Core\TenantEnforcer;
+use Core\Auth\RbacGuard;
 
 class ApiController {
     
     /**
      * GET /api/leads
-     * Returns leads scoped to the current tenant.
      */
     public function index() {
         try {
-            // The Query is automatically scoped with 'WHERE organization_id = X' via Database::query() 
-            // which calls TenantEnforcer::scopeQuery().
+            RbacGuard::enforce('leads', 'read');
+            
             $stmt = Database::query("SELECT * FROM contacts WHERE lifecycle_stage = 'lead'");
             $leads = $stmt->fetchAll();
 
             return json_encode([
                 'success' => true,
-                'tenant_id' => TenantEnforcer::getTenantId(),
                 'data' => $leads
             ]);
         } catch (\Exception $e) {
-            return json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
+            http_response_code($e->getCode() ?: 500);
+            return json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 
     /**
      * POST /api/leads
-     * Creates a new lead for the current tenant.
      */
     public function store($data) {
         try {
-            $orgId = TenantEnforcer::getTenantId();
+            RbacGuard::enforce('leads', 'create');
+            
+            $tenantId = TenantEnforcer::getTenantId();
             
             $pdo = Database::getConnection();
-            $stmt = $pdo->prepare("INSERT INTO contacts (organization_id, first_name, last_name, email) VALUES (?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO contacts (tenant_id, first_name, last_name, email, phone, company) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([
-                $orgId,
+                $tenantId,
                 $data['first_name'] ?? '',
                 $data['last_name'] ?? '',
-                $data['email'] ?? ''
+                $data['email'] ?? '',
+                $data['phone'] ?? '',
+                $data['company'] ?? ''
             ]);
 
             return json_encode([
@@ -58,10 +58,8 @@ class ApiController {
                 'id' => $pdo->lastInsertId()
             ]);
         } catch (\Exception $e) {
-            return json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
+            http_response_code($e->getCode() ?: 500);
+            return json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 }

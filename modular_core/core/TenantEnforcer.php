@@ -30,7 +30,7 @@ class TenantEnforcer {
             $payload = JwtManager::decode($token);
             
             self::$currentTenantId = $payload['tenant_id'];
-            self::$currentUserRole = $payload['role'];
+            self::$currentUserRole = $payload['roles'] ?? [];
             
             // Fetch Tenant Config (Shared vs Dedicated) from Central DB cache/Redis
             self::resolveTenantConfig(self::$currentTenantId);

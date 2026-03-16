@@ -1,183 +1,147 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import { useActiveModules, componentMap } from './core/ModuleLoader';
-import OnboardingWizard from './components/Onboarding/OnboardingWizard';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth, Can } from './core/AuthContext';
+import LoginPage from './modules/Auth/LoginPage';
+import AnalyticsDashboard from './modules/Analytics';
+import LeadsPage from './modules/Leads';
+const MessagingInbox = () => <div style={styles.page}><h1>Omnichannel Inbox</h1><p>Unified inbox for WhatsApp, Telegram, and Email.</p></div>;
+const AICenter = () => <div style={styles.page}><h1>AI Intelligence Center</h1><p>Configure custom scoring and auto-reply rules.</p></div>;
+const BillingSettings = () => <div style={styles.page}><h1>Billing & Subscriptions</h1><p>Manage your organization's plan and invoices.</p></div>;
+const AdminSettings = () => <div style={styles.page}><h1>System Settings</h1><p>Manage users, roles, and integrations.</p></div>;
 
-/**
- * Dashboard Layout — renders sidebar + routed module content
- */
-function DashboardLayout() {
-    const [showOnboarding, setShowOnboarding] = React.useState(() => {
-        return !localStorage.getItem('nexa_onboarded');
-    });
-    const orgName = localStorage.getItem('nexa_org_name') || 'Nexa Intelligence HQ';
-    const activeModules = useActiveModules();
+function ProtectedRoute({ children, module, action }) {
+    const { user, loading, can } = useAuth();
+    if (loading) return null;
+    if (!user) return <Navigate to="/login" />;
+    if (module && action && !can(module, action)) return <Navigate to="/dashboard" />;
+    return children;
+}
 
-    const handleOnboardingComplete = (data) => {
-        localStorage.setItem('nexa_onboarded', 'true');
-        if (data?.companyName) localStorage.setItem('nexa_org_name', data.companyName);
-        setShowOnboarding(false);
-    };
+function Layout({ children }) {
+    const { logout, user } = useAuth();
+    const location = useLocation();
+
+    const menuItems = [
+        { label: 'Dashboard', path: '/dashboard', icon: '📊' },
+        { label: 'Leads', path: '/leads', icon: '👤', module: 'leads', action: 'read' },
+        { label: 'Inbox', path: '/inbox', icon: '💬', module: 'messaging', action: 'read' },
+        { label: 'AI Center', path: '/ai', icon: '🤖', module: 'ai', action: 'scoring' },
+        { label: 'Billing', path: '/billing', icon: '💳', module: 'billing', action: 'view' },
+        { label: 'Settings', path: '/settings', icon: '⚙️', module: 'settings', action: 'branding' },
+    ];
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#050505', color: '#fff', fontFamily: 'Outfit, sans-serif' }}>
-            {showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
-            <Sidebar />
-            <main style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
-                <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', alignItems: 'center' }}>
-                    <div>
-                        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '-0.5px' }}>
-                            {orgName} <span style={{ color: '#05ff91' }}>Dashboard</span>
-                        </h1>
-                        <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>
-                            Welcome back. Your Nexa Intelligence™ engine is running at 99.4% precision.
-                        </p>
+        <div style={styles.app}>
+            <aside style={styles.sidebar}>
+                <div style={styles.logo}>AI RevOS</div>
+                <nav style={styles.nav}>
+                    {menuItems.map(item => (
+                        <MenuItem key={item.path} item={item} active={location.pathname === item.path} />
+                    ))}
+                </nav>
+                <div style={styles.footer}>
+                    <div style={styles.userInfo}>
+                        <div style={styles.avatar}>{user?.name?.[0]}</div>
+                        <div style={styles.userName}>{user?.name}</div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ background: 'rgba(5,255,145,0.1)', border: '1px solid rgba(5,255,145,0.2)', padding: '8px 16px', borderRadius: '12px', fontSize: '12px', color: '#05ff91', fontWeight: '700' }}>
-                            PLAN: ENTERPRISE AI
-                        </div>
-                        <div style={{ width: '40px', height: '40px', background: 'linear-gradient(45deg, #05ff91, #00d2ff)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>A</div>
+                    <button onClick={logout} style={styles.logoutBtn}>Logout</button>
+                </div>
+            </aside>
+            <main style={styles.main}>
+                <header style={styles.header}>
+                    <div style={styles.breadcrumb}>Home {location.pathname.replace('/', ' > ')}</div>
+                    <div style={styles.headerActions}>
+                        <span style={styles.tenantBadge}>Tenant ID: {user?.tenant_id}</span>
                     </div>
                 </header>
-
-                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', borderRadius: '24px', minHeight: 'calc(100vh - 200px)', padding: '24px' }}>
-                    <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>Loading module...</div>}>
-                        <Routes>
-                            <Route path="/" element={<OverviewDashboard />} />
-                            {activeModules.map(mod => {
-                                const Comp = componentMap[mod.id];
-                                if (!Comp) return null;
-                                return <Route key={mod.id} path={mod.path} element={<Comp basePath={mod.path} />} />;
-                            })}
-                        </Routes>
-                    </Suspense>
+                <div style={styles.content}>
+                    {children}
                 </div>
             </main>
         </div>
     );
 }
 
-/**
- * Executive Overview Dashboard — the home page with live KPIs
- */
-function OverviewDashboard() {
-    const [stats, setStats] = React.useState(null);
-
-    React.useEffect(() => {
-        // Fetch from API
-        fetch('http://localhost:9090/health')
-            .then(r => r.json())
-            .then(() => {
-                setStats({
-                    revenue: '$5.6M', deals: 24, leads: 148, employees: 4,
-                    pipeline: '$6.1M', winRate: '38%', tickets: 7, projects: 4
-                });
-            })
-            .catch(() => {
-                setStats({
-                    revenue: '$5.6M', deals: 24, leads: 148, employees: 4,
-                    pipeline: '$6.1M', winRate: '38%', tickets: 7, projects: 4
-                });
-            });
-    }, []);
-
-    if (!stats) return <div style={{ padding: '40px', color: '#64748b' }}>Loading dashboard...</div>;
-
-    const cards = [
-        { label: 'Total Revenue', value: stats.revenue, icon: '💰', color: '#05ff91' },
-        { label: 'Active Deals', value: stats.deals, icon: '🔄', color: '#00d2ff' },
-        { label: 'Total Leads', value: stats.leads, icon: '🎯', color: '#818cf8' },
-        { label: 'Pipeline Value', value: stats.pipeline, icon: '📊', color: '#f59e0b' },
-        { label: 'Win Rate', value: stats.winRate, icon: '🏆', color: '#05ff91' },
-        { label: 'Open Tickets', value: stats.tickets, icon: '🎟️', color: '#ec4899' },
-        { label: 'Active Projects', value: stats.projects, icon: '🎯', color: '#00d2ff' },
-        { label: 'Employees', value: stats.employees, icon: '👥', color: '#818cf8' },
-    ];
+function MenuItem({ item, active }) {
+    const { can } = useAuth();
+    if (item.module && item.action && !can(item.module, item.action)) return null;
 
     return (
-        <div style={{ padding: '20px' }}>
-            <h2 style={{ fontSize: '28px', fontWeight: '900', margin: '0 0 8px' }}>
-                <span style={{ fontSize: '32px' }}>🏠</span> Executive Command Center
-            </h2>
-            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '32px' }}>
-                Unified CRM + ERP intelligence — real-time metrics across all business modules
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px', marginBottom: '40px' }}>
-                {cards.map(c => (
-                    <div key={c.label} style={{
-                        background: 'rgba(255,255,255,0.02)', borderRadius: '20px', padding: '24px',
-                        border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease'
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = `${c.color}40`; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{c.label}</span>
-                            <span style={{ fontSize: '20px' }}>{c.icon}</span>
-                        </div>
-                        <div style={{ fontSize: '32px', fontWeight: '900', color: c.color, marginTop: '12px' }}>{c.value}</div>
-                    </div>
-                ))}
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', padding: '28px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <h3 style={{ margin: '0 0 16px', color: '#818cf8', fontWeight: '800' }}>
-                        <span style={{ marginRight: '8px' }}>✨</span>AI Insights
-                    </h3>
-                    {[
-                        "Pipeline velocity increased 14.2% MoM — 3 enterprise deals accelerating",
-                        "Lead-to-close ratio at 38% — above industry benchmark of 27%",
-                        "HR: 2 open positions impacting Q2 delivery timeline",
-                        "Finance: $3.5M outstanding invoices — recommend follow-up sequence"
-                    ].map((insight, i) => (
-                        <div key={i} style={{ padding: '14px 16px', borderLeft: '3px solid #818cf8', background: 'rgba(129,140,248,0.05)', borderRadius: '0 12px 12px 0', marginBottom: '10px', fontSize: '13px', color: '#94a3b8', lineHeight: '1.5' }}>
-                            {insight}
-                        </div>
-                    ))}
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', padding: '28px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <h3 style={{ margin: '0 0 16px', color: '#05ff91', fontWeight: '800' }}>
-                        <span style={{ marginRight: '8px' }}>⚡</span>Recent Activity
-                    </h3>
-                    {[
-                        { time: '2 min ago', text: 'Deal "Amazon Web Services Migration" moved to Proposal', color: '#05ff91' },
-                        { time: '15 min ago', text: 'Invoice INV-001 paid by Tesla Inc — $1,250,000', color: '#00d2ff' },
-                        { time: '1 hr ago', text: 'New Lead: Tim Cook from Apple added to pipeline', color: '#818cf8' },
-                        { time: '3 hr ago', text: 'Project "Cloud Migration Q2" reached 65% completion', color: '#f59e0b' },
-                        { time: '5 hr ago', text: 'Employee Ahmed Hassan updated Finance forecast', color: '#ec4899' },
-                    ].map((a, i) => (
-                        <div key={i} style={{ display: 'flex', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: a.color, marginTop: '6px', flexShrink: 0 }}></div>
-                            <div>
-                                <div style={{ fontSize: '13px', color: '#e2e8f0' }}>{a.text}</div>
-                                <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>{a.time}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
+        <Link to={item.path} style={{...styles.navLink, ...(active ? styles.navLinkActive : {})}}>
+            <span style={styles.navIcon}>{item.icon}</span>
+            <span style={styles.navLabel}>{item.label}</span>
+        </Link>
     );
 }
 
-import LandingPage from './pages/LandingPage/LandingPage';
-import Login from './pages/Login';
-
-/**
- * Main App — routes between landing, login, and dashboard
- */
 export default function App() {
     return (
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard/*" element={<DashboardLayout />} />
-            </Routes>
-        </Router>
+        <AuthProvider>
+            <Router>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    
+                    <Route path="/dashboard" element={
+                        <ProtectedRoute>
+                            <Layout><AnalyticsDashboard /></Layout>
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/leads" element={
+                        <ProtectedRoute module="leads" action="read">
+                            <Layout><LeadsPage /></Layout>
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/inbox" element={
+                        <ProtectedRoute module="messaging" action="read">
+                            <Layout><MessagingInbox /></Layout>
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/ai" element={
+                        <ProtectedRoute module="ai" action="scoring">
+                            <Layout><AICenter /></Layout>
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/billing" element={
+                        <ProtectedRoute module="billing" action="view">
+                            <Layout><BillingSettings /></Layout>
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/settings" element={
+                        <ProtectedRoute module="settings" action="branding">
+                            <Layout><AdminSettings /></Layout>
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/" element={<Navigate to="/dashboard" />} />
+                </Routes>
+            </Router>
+        </AuthProvider>
     );
 }
+
+const styles = {
+    app: { display: 'flex', height: '100vh', background: '#f8fafc', color: '#1e293b', fontFamily: 'Inter, sans-serif' },
+    sidebar: { width: '260px', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column' },
+    logo: { padding: '24px', fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px', borderBottom: '1px solid #1e293b' },
+    nav: { flex: 1, padding: '16px 12px' },
+    navLink: { display: 'flex', alignItems: 'center', padding: '12px 16px', borderRadius: '8px', color: '#94a3b8', textDecoration: 'none', marginBottom: '4px', transition: 'all 0.2s' },
+    navLinkActive: { background: '#1e293b', color: '#fff' },
+    navIcon: { marginRight: '12px', fontSize: '18px' },
+    navLabel: { fontSize: '14px', fontWeight: '500' },
+    footer: { padding: '16px', borderTop: '1px solid #1e293b' },
+    userInfo: { display: 'flex', alignItems: 'center', marginBottom: '16px' },
+    avatar: { width: '32px', height: '32px', borderRadius: '8px', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginRight: '10px' },
+    userName: { fontSize: '14px', fontWeight: '600' },
+    logoutBtn: { width: '100%', padding: '8px', borderRadius: '6px', background: 'transparent', border: '1px solid #1e293b', color: '#94a3b8', cursor: 'pointer', fontSize: '13px' },
+    main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    header: { height: '64px', background: '#fff', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px' },
+    breadcrumb: { color: '#64748b', fontSize: '14px' },
+    tenantBadge: { background: '#f1f5f9', color: '#475569', padding: '4px 12px', borderRadius: '100px', fontSize: '12px', fontWeight: '600' },
+    content: { flex: 1, overflowY: 'auto' },
+    page: { padding: '32px' }
+};

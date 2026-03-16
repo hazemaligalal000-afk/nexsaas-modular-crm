@@ -1,0 +1,10 @@
+{
+    "name": "Roles",
+    "version": "1.0.0",
+    "description": "Tenant-specific role and permission management.",
+    "enabled": true,
+    "permissions": {
+        "Owner": ["manage_roles"],
+        "Admin": ["manage_roles"]
+    }
+}

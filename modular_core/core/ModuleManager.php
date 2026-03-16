@@ -1,96 +1,101 @@
 <?php
 /**
  * Core/ModuleManager.php
- * Handles Plug-and-Play Dynamics (Task 3 and Task 7)
- * Automatically discovers, installs via Schema, and mounts API controllers for active modules.
+ * Dynamic module loader and API router for nexsaas-modular-crm.
  */
 
 namespace Core;
 
 class ModuleManager {
-    private $modulesDir;
-    private $activeModules = [];
+    private $modulesPath;
+    private $loadedModules = [];
 
-    public function __construct($dir = __DIR__ . '/../modules') {
-        $this->modulesDir = $dir;
+    public function __construct($modulesPath) {
+        $this->modulesPath = $modulesPath;
     }
 
     /**
-     * Bootstraps all active modules for the current SaaS Organization.
-     * (E.g., if Tenant X paid for Invoicing, it loads. If not, it skips.)
+     * Finds and bootstraps active modules based on directory structure.
      */
     public function loadActiveModules($tenantId) {
-        $directories = glob($this->modulesDir . '/*' , GLOB_ONLYDIR);
+        $dirs = array_filter(glob($this->modulesPath . '/*'), 'is_dir');
         
-        foreach($directories as $dir) {
+        foreach ($dirs as $dir) {
             $moduleName = basename($dir);
-            $manifestPath = $dir . '/module.json';
+            $configFile = $dir . '/module.json';
             
-            // Backwards compatibility with early schema.json or new module.json standard
-            if (!file_exists($manifestPath)) {
-                $manifestPath = $dir . '/schema.json';
-            }
-
-            if (file_exists($manifestPath)) {
-                $config = json_decode(file_get_contents($manifestPath), true);
-                
-                if ($config['enabled'] ?? true) {
-                    $this->activeModules[$moduleName] = [
-                        'config' => $config,
-                        'controllerClass' => "\\Modules\\{$moduleName}\\ApiController",
-                        'path' => $dir
-                    ];
-                    
-                    // Provision permissions into the core RBAC engine dynamically
-                    $this->provisionPermissions($moduleName, $config['permissions'] ?? []);
+            if (file_exists($configFile)) {
+                $config = json_decode(file_get_contents($configFile), true);
+                if ($config['enabled'] ?? false) {
+                    $this->loadedModules[$moduleName] = $config;
                 }
             }
         }
     }
 
-    private function provisionPermissions($moduleName, $permissions) {
-        // In a real-world scenario, this would query the DB and insert missing roles/permissions.
-        // For the NexaCRM prototype, we log the provisioning event.
-        $logFile = __DIR__ . '/../logs/module_provisioning.log';
-        if (!file_exists(dirname($logFile))) {
-             mkdir(dirname($logFile), 0777, true);
-        }
-        
-        $timestamp = date('Y-m-d H:i:s');
-        $permissionCount = count($permissions);
-        
-        $entry = "[{$timestamp}] Module [{$moduleName}]: Provisioned {$permissionCount} permission definitions into the SaaS RBAC Engine.\n";
-        file_put_contents($logFile, $entry, FILE_APPEND);
-    }
-
     /**
-     * Dynamically routes the API request to the specific Module's Controller.
+     * Dispatch incoming API requests to the respective module's ApiController.
+     * URI Pattern: /api/{module}/{action} or /api/{module}/{id}/{action}
      */
     public function dispatchApiRequest($method, $uri) {
-        // e.g., $uri = /api/v1/Leads/123
-        $parts = explode('/', trim(str_ireplace('/api/v1', '', $uri), '/'));
-        $requestedModule = $parts[0] ?? null;
-        $id = $parts[1] ?? null;
+        // Clean up URI (e.g., remove /api/ prefix if present)
+        $uri = trim($uri, '/');
+        $parts = explode('/', $uri);
 
-        if (!$requestedModule || !isset($this->activeModules[$requestedModule])) {
-            throw new \Exception("Module not found, disabled, or uninstalled.", 404);
+        // Expecting: [0] => module, [1] => action/id
+        if (count($parts) < 1) {
+            throw new \Exception("Invalid API endpoint structure", 400);
         }
 
-        $controllerClass = $this->activeModules[$requestedModule]['controllerClass'];
-        // Require the physical file automatically
-        require_once $this->activeModules[$requestedModule]['path'] . '/ApiController.php';
+        $moduleName = ucfirst($parts[0]);
+        $action = $parts[1] ?? 'index';
+        $id = null;
+
+        // Simple RESTful routing logic:
+        // GET /leads           => index()
+        // POST /leads          => store($data)
+        // GET /leads/123       => show(123)
+        // PATCH /leads/123     => update(123, $data)
+        // DELETE /leads/123    => destroy(123)
         
+        if (is_numeric($action)) {
+            $id = $action;
+            if ($method === 'GET') $action = 'show';
+            elseif ($method === 'PATCH' || $method === 'PUT') $action = 'update';
+            elseif ($method === 'DELETE') $action = 'destroy';
+            else $action = $parts[2] ?? 'index';
+        }
+
+        if (!isset($this->loadedModules[$moduleName])) {
+            throw new \Exception("Module '{$moduleName}' not found or disabled.", 404);
+        }
+
+        $controllerClass = "Modules\\{$moduleName}\\ApiController";
+        
+        if (!class_exists($controllerClass)) {
+            // Lazy load the class if autoloader is not configured for modules
+            $file = $this->modulesPath . "/{$moduleName}/ApiController.php";
+            if (file_exists($file)) {
+                require_once $file;
+            } else {
+                throw new \Exception("Controller for module '{$moduleName}' not found.", 404);
+            }
+        }
+
         $controller = new $controllerClass();
         
-        // Dynamic Controller Execution (GET -> index/show, POST -> store)
-        if ($method === 'GET') {
-            return $id ? $controller->show($id) : $controller->index();
-        } elseif ($method === 'POST') {
-            return $controller->store($_POST);
-        } elseif ($method === 'DELETE') {
-            return $controller->destroy($id);
+        if (!method_exists($controller, $action)) {
+            throw new \Exception("Action '{$action}' not found in '{$moduleName}' controller.", 404);
+        }
+
+        // Get JSON input for POST/PATCH
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        // Execute and return response
+        if ($id) {
+            return $controller->$action($id, $data);
         } else {
-            throw new \Exception("Method not supported on this Module.", 405);
+            return $controller->$action($data);
         }
     }
 }

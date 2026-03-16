@@ -1,0 +1,10 @@
+{
+    "name": "Users",
+    "version": "1.0.0",
+    "description": "User management and team collaboration.",
+    "enabled": true,
+    "permissions": {
+        "Owner": ["create", "read", "update", "delete", "manage_roles"],
+        "Admin": ["create", "read", "update", "manage_roles"]
+    }
+}

@@ -1,138 +1,72 @@
 version: '3.8'
 
 services:
-  # ── Existing CRM Backend ──
-  app:
-    build: .
-    container_name: crm-app
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www/html
-    environment:
-      - DB_HOSTNAME=db
-      - DB_PORT=3306
-      - DB_USERNAME=crm_user
-      - DB_PASSWORD=crm_secret
-      - DB_NAME=crm_db
-    depends_on:
-      - db
-
-  # ── MySQL Database ──
-  db:
+  # ─── DATABASE ───
+  database:
     image: mysql:8.0
-    container_name: crm-db
-    restart: unless-stopped
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    container_name: revos-db
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: crm_db
-      MYSQL_USER: crm_user
-      MYSQL_PASSWORD: crm_secret
+      MYSQL_DATABASE: revos_central
+      MYSQL_ROOT_PASSWORD: enterprise_password
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: enterprise_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./modular_core/database/001_enterprise_schema.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./schema_update.sql:/docker-entrypoint-initdb.d/01-schema.sql
 
-  # ── Redis Cache & Queue ──
-  redis-cache:
+  # ─── REDIS CACHE ───
+  cache:
     image: redis:7-alpine
-    container_name: crm-redis-cache
-    restart: unless-stopped
-
-  redis-queue:
-    image: redis:7-alpine
-    container_name: crm-redis-queue
-    restart: unless-stopped
-
-  # ── ERPNext Backend ──
-  erpnext-backend:
-    image: frappe/erpnext:v15
-    container_name: crm-erpnext-backend
-    restart: unless-stopped
-    volumes:
-      - erpnext-sites:/home/frappe/frappe-bench/sites
-    environment:
-      DB_HOST: db
-      DB_PORT: "3306"
-      REDIS_CACHE: redis://redis-cache:6379/0
-      REDIS_QUEUE: redis://redis-queue:6379/1
-      SOCKETIO_PORT: "9000"
-    depends_on:
-      - db
-      - redis-cache
-      - redis-queue
-
-  # ── ERPNext Web Server ──
-  erpnext-frontend:
-    image: frappe/erpnext:v15
-    container_name: crm-erpnext-frontend
-    restart: unless-stopped
-    command: ["nginx-entrypoint.sh"]
-    environment:
-      BACKEND: erpnext-backend:8000
-      SOCKETIO: erpnext-backend:9000
-      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
-      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
-      UPSTREAM_REAL_IP_RECURSIVE: "off"
-      PROXY_READ_TIMEOUT: "120"
-      CLIENT_MAX_BODY_SIZE: "50m"
-    volumes:
-      - erpnext-sites:/home/frappe/frappe-bench/sites
+    container_name: revos-redis
     ports:
-      - "8069:8080"
-    depends_on:
-      - erpnext-backend
+      - "6379:6379"
 
-  # ── ERPNext Workers ──
-  erpnext-worker-short:
-    image: frappe/erpnext:v15
-    container_name: crm-erpnext-worker-short
-    restart: unless-stopped
-    command: ["bench", "worker", "--queue", "short"]
+  # ─── PHP BACKEND (Core System) ───
+  backend:
+    build:
+      context: ./modular_core
+      dockerfile: Dockerfile
+    container_name: revos-backend
     volumes:
-      - erpnext-sites:/home/frappe/frappe-bench/sites
+      - ./modular_core:/var/www/html
     environment:
-      DB_HOST: db
-      DB_PORT: "3306"
-      REDIS_CACHE: redis://redis-cache:6379/0
-      REDIS_QUEUE: redis://redis-queue:6379/1
+      DB_HOST: database
+      DB_NAME: revos_central
+      DB_USER: admin
+      DB_PASS: enterprise_password
+      REDIS_HOST: cache
+      JWT_SECRET: AI_REVOS_JWT_SECRET_KEY_ENTERPRISE_2026
+    ports:
+      - "8080:80"
     depends_on:
-      - erpnext-backend
+      - database
+      - cache
 
-  erpnext-worker-long:
-    image: frappe/erpnext:v15
-    container_name: crm-erpnext-worker-long
-    restart: unless-stopped
-    command: ["bench", "worker", "--queue", "long"]
-    volumes:
-      - erpnext-sites:/home/frappe/frappe-bench/sites
+  # ─── AI MICROSERVICE ───
+  ai_engine:
+    build:
+      context: ./ai_engine
+      dockerfile: Dockerfile
+    container_name: revos-ai
     environment:
-      DB_HOST: db
-      DB_PORT: "3306"
-      REDIS_CACHE: redis://redis-cache:6379/0
-      REDIS_QUEUE: redis://redis-queue:6379/1
+      REDIS_HOST: cache
+    ports:
+      - "8000:8000"
     depends_on:
-      - erpnext-backend
+      - cache
 
-  # ── ERPNext Scheduler ──
-  erpnext-scheduler:
-    image: frappe/erpnext:v15
-    container_name: crm-erpnext-scheduler
-    restart: unless-stopped
-    command: ["bench", "schedule"]
-    volumes:
-      - erpnext-sites:/home/frappe/frappe-bench/sites
-    environment:
-      DB_HOST: db
-      DB_PORT: "3306"
-      REDIS_CACHE: redis://redis-cache:6379/0
-      REDIS_QUEUE: redis://redis-queue:6379/1
+  # ─── FRONTEND (React) ───
+  frontend:
+    build:
+      context: ./modular_core/react-frontend
+      dockerfile: Dockerfile
+    container_name: revos-frontend
+    ports:
+      - "3000:80"
     depends_on:
-      - erpnext-backend
+      - backend
 
 volumes:
-  db_data:
-  erpnext-sites:
+  postgres_data:

@@ -1,11 +1,13 @@
 {
     "name": "Leads",
     "version": "1.0.0",
-    "description": "Multi-tenant lead management and tracking.",
+    "description": "Enterprise lead management with omnichannel source tracking.",
     "enabled": true,
     "permissions": {
-        "Admin": ["view_leads", "create_leads", "delete_leads"],
-        "User": ["view_leads", "create_leads"]
+        "Owner": ["create", "read", "update", "delete", "export", "import", "assign"],
+        "Admin": ["create", "read", "update", "delete", "export", "import", "assign"],
+        "Sales_Manager": ["create", "read", "update", "assign"],
+        "Sales_Agent": ["create", "read", "update"]
     },
     "ui": {
         "navigation": {
