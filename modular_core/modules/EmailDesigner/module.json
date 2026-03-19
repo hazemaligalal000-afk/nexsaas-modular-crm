@@ -1,0 +1,42 @@
+{
+  "name": "EmailDesigner",
+  "version": "1.0.0",
+  "description": "Email template designer with MJML, per-company branding, campaigns",
+  "dependencies": ["Platform", "CRM"],
+  "permissions": [
+    "email.templates.read",
+    "email.templates.write",
+    "email.campaigns.read",
+    "email.campaigns.write",
+    "email.campaigns.send",
+    "email.brand_settings.read",
+    "email.brand_settings.write"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/email/templates",
+      "handler": "EmailDesigner\\EmailTemplateController@list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/email/templates",
+      "handler": "EmailDesigner\\EmailTemplateController@create"
+    },
+    {
+      "method": "GET",
+      "path": "/api/email/campaigns",
+      "handler": "EmailDesigner\\EmailCampaignController@list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/email/campaigns",
+      "handler": "EmailDesigner\\EmailCampaignController@create"
+    },
+    {
+      "method": "POST",
+      "path": "/api/email/campaigns/:id/send",
+      "handler": "EmailDesigner\\EmailCampaignController@send"
+    }
+  ]
+}

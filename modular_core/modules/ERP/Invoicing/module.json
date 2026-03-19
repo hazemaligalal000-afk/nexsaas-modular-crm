@@ -1,0 +1,64 @@
+{
+  "name": "ERP.Invoicing",
+  "version": "1.0.0",
+  "description": "Invoicing and Accounts Receivable module with PDF generation, email delivery, and Stripe integration",
+  "dependencies": [
+    "ERP.GL",
+    "Platform.Auth"
+  ],
+  "permissions": [
+    "erp.invoice.view",
+    "erp.invoice.create",
+    "erp.invoice.edit",
+    "erp.invoice.finalize",
+    "erp.invoice.delete",
+    "erp.payment.view",
+    "erp.payment.create",
+    "erp.payment.edit",
+    "erp.payment.delete"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/v1/erp/invoices",
+      "controller": "InvoiceController",
+      "action": "index",
+      "permission": "erp.invoice.view"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/erp/invoices/{id}",
+      "controller": "InvoiceController",
+      "action": "show",
+      "permission": "erp.invoice.view"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/erp/invoices/{id}/finalize",
+      "controller": "InvoiceController",
+      "action": "finalize",
+      "permission": "erp.invoice.finalize"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/erp/invoices/{id}/payments",
+      "controller": "InvoiceController",
+      "action": "recordPayment",
+      "permission": "erp.payment.create"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/erp/invoices/{id}/payment-link",
+      "controller": "InvoiceController",
+      "action": "createPaymentLink",
+      "permission": "erp.invoice.view"
+    },
+    {
+      "method": "POST",
+      "path": "/api/billing/stripe/webhook",
+      "controller": "StripeWebhookController",
+      "action": "handleWebhook",
+      "permission": null
+    }
+  ]
+}

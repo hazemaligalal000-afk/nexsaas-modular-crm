@@ -1,0 +1,41 @@
+{
+  "name": "CTI",
+  "version": "1.0.0",
+  "description": "Computer Telephony Integration - call logging, screen pop, recording",
+  "dependencies": ["Platform", "CRM", "Integrations"],
+  "permissions": [
+    "cti.calls.read",
+    "cti.calls.write",
+    "cti.calls.make",
+    "cti.recordings.read",
+    "cti.recordings.delete",
+    "cti.screen_pop.view"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/calls",
+      "handler": "CTI\\CallController@list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/calls/initiate",
+      "handler": "CTI\\CallController@initiate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/calls/:id",
+      "handler": "CTI\\CallController@show"
+    },
+    {
+      "method": "POST",
+      "path": "/api/calls/:id/disposition",
+      "handler": "CTI\\CallController@disposition"
+    },
+    {
+      "method": "GET",
+      "path": "/api/recordings/:id",
+      "handler": "CTI\\RecordingController@show"
+    }
+  ]
+}

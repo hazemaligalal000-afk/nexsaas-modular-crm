@@ -1,0 +1,22 @@
+-- Migration 002: Document universal table column contract
+-- Requirements: 1.1, 1.2
+--
+-- Every table in NexSaaS MUST include the following columns:
+--
+--   id           BIGSERIAL PRIMARY KEY
+--   company_code VARCHAR(2) NOT NULL          -- '01'–'06'; scope to one of 6 companies
+--   tenant_id    UUID NOT NULL                -- multi-tenancy isolation key
+--   created_by   BIGINT REFERENCES users(id)  -- nullable on bootstrap tables
+--   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+--   updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+--   deleted_at   TIMESTAMPTZ                  -- NULL = active; soft-delete pattern
+--
+-- Enforcement:
+--   - BaseModel::scopeQuery() appends WHERE tenant_id = ? AND deleted_at IS NULL
+--   - Queries without tenant_id are rejected at the application layer
+--   - Soft-delete: BaseModel::softDelete() sets deleted_at = NOW()
+--
+-- This migration is a documentation/comment-only migration.
+-- Actual table DDL is in subsequent migrations.
+
+SELECT 1; -- no-op to satisfy migration runner

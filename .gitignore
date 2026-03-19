@@ -1,0 +1,46 @@
+# Environment files
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+modular_core/vendor/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# Build outputs
+dist/
+build/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Keys and secrets
+storage/keys/*.key
+storage/keys/*.pem
+
+# Test results
+.phpunit.result.cache
+coverage/
+
+# AI/ML models (large files)
+ai_engine/models/*.bin
+ai_engine/models/*.pt
+ai_engine/embeddings/*.index
+
+# Temporary files
+*.tmp
+*.swp
+*.swo

@@ -11,6 +11,9 @@ import datetime
 import hashlib
 import json
 
+from app.lead_score import router as lead_score_router
+from app.win_probability import router as win_probability_router
+
 app = FastAPI(
     title="AI Revenue OS — Intelligence Engine",
     version="2.0.0",
@@ -54,6 +57,10 @@ class RevenueForecastRequest(BaseModel):
     historical_data: Optional[List[dict]] = None
 
 # ─── Health Check ────────────────────────────────────────────
+
+app.include_router(lead_score_router)
+app.include_router(win_probability_router)
+
 
 @app.get("/health")
 def health():

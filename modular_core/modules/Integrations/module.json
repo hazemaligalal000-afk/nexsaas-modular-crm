@@ -1,0 +1,31 @@
+{
+  "name": "Integrations",
+  "version": "1.0.0",
+  "description": "Telecom & messaging integrations (Twilio, WhatsApp, SMS, VoIP)",
+  "dependencies": ["Platform", "CRM"],
+  "permissions": [
+    "integrations.configs.read",
+    "integrations.configs.write",
+    "integrations.webhooks.receive",
+    "integrations.sms.send",
+    "integrations.whatsapp.send",
+    "integrations.calls.make"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/integrations/configs",
+      "handler": "Integrations\\IntegrationConfigController@list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/integrations/configs",
+      "handler": "Integrations\\IntegrationConfigController@create"
+    },
+    {
+      "method": "POST",
+      "path": "/api/webhooks/:platform",
+      "handler": "Integrations\\WebhookController@receive"
+    }
+  ]
+}
