@@ -35,6 +35,17 @@ class IntegrationService {
         $celery->scheduleMonthly('PayrollFinalization');
         $celery->scheduleNightly('ChurnPredictionRecompute');
         $celery->scheduleWeekly('WIPStaleCheck');
+        
+        // Batch D: AR/AP Schedule
+        $celery->scheduleDaily('AccountsReceivableOverdueAlerts');
+        $celery->scheduleHourly('ETAEInvoiceSubmissionSync');
+        
+        // Batch E: Bank Management Schedule
+        $celery->scheduleDaily('BankFeedAutoReconciliation');
+        $celery->scheduleMonthly('CashFlowForecastRefresh');
+        
+        // Batch J: Financial Statements
+        $celery->scheduleMonthly('EndOfPeriodClosingSnapshot');
     }
 
     public function aiSearchCall($query, $tenantId) {
@@ -44,5 +55,43 @@ class IntegrationService {
             'query' => $query,
             'top_n' => 20
         ]);
+    }
+
+    /**
+     * Batch M: AI Anomaly Detection Wrapper
+     */
+    public function detectAccountingAnomaly(string $tenantId, string $companyCode, string $accountCode, float $amount, string $debitCredit) {
+        try {
+            $api = new AIInternalClient();
+            return $api->post('/accounting/outlier-detect', [
+                'tenant_id' => $tenantId,
+                'company_code' => $companyCode,
+                'account_code' => $accountCode,
+                'amount' => $amount,
+                'debit_credit' => $debitCredit
+            ]);
+        } catch (\Exception $e) {
+            // Dead-letter queue fallback requirement: return null/safe defaults if AI down
+            \Core\AuditLogger::log($tenantId, 'SYSTEM', 'AI_ENGINE_DOWN', 'ERROR', $e->getMessage(), 0, []);
+            return ['is_outlier' => false, 'confidence' => 0];
+        }
+    }
+
+    /**
+     * Batch M: Duplicate Voucher Detection (Req 57.2)
+     */
+    public function checkDuplicateVoucher(string $tenantId, string $companyCode, string $vendorCode, float $amount, string $date) {
+        try {
+            $api = new AIInternalClient();
+            return $api->post('/accounting/duplicate-check', [
+                'tenant_id' => $tenantId,
+                'company_code' => $companyCode,
+                'vendor_code' => $vendorCode,
+                'amount' => $amount,
+                'date' => $date
+            ]);
+        } catch (\Exception $e) {
+            return ['is_duplicate' => false, 'confidence' => 0];
+        }
     }
 }

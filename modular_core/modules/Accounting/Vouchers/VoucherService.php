@@ -102,6 +102,45 @@ class VoucherService
             }
         }
 
+        // Batch M Integration: AI Anomaly Detection & Duplicate Warning
+        // Requirement 57.2: Duplicate Voucher Detection
+        // Requirement 57.7: Outlier Detection
+        if (class_exists(\Core\Integration\IntegrationService::class)) {
+            $integration = \Core\Integration\IntegrationService::getInstance();
+            foreach ($lines as $line) {
+                // Duplicate Vendor Bill Check
+                if (!empty($line['vendor_code']) && !empty($line['cr_value']) && $line['cr_value'] > 0) {
+                    $dupCheck = $integration->checkDuplicateVoucher(
+                        $this->tenantId, 
+                        $header['company_code'] ?? $this->companyCode, 
+                        $line['vendor_code'], 
+                        (float)$line['cr_value'], 
+                        $header['voucher_date']
+                    );
+                    if (!empty($dupCheck['is_duplicate'])) {
+                        // Warn but don't strictly block (Requirement 57.2)
+                        \Core\AuditLogger::log($this->tenantId, 'AI_AGENT', 'WARNING', 'DUPLICATE_VOUCHER_DETECTED', json_encode($dupCheck), 0, []);
+                    }
+                }
+                
+                // Statistical Outlier Check
+                $amount = (float)($line['dr_value'] > 0 ? $line['dr_value'] : $line['cr_value']);
+                $anomalyCheck = $integration->detectAccountingAnomaly(
+                    $this->tenantId,
+                    $header['company_code'] ?? $this->companyCode,
+                    $line['account_code'],
+                    $amount,
+                    $line['dr_value'] > 0 ? 'debit' : 'credit'
+                );
+                
+                if (!empty($anomalyCheck['is_outlier']) && $anomalyCheck['confidence'] > 0.8) {
+                    // Force approval status requirement if outlier detected
+                    $header['requires_explicit_approval'] = true; 
+                    \Core\AuditLogger::log($this->tenantId, 'AI_AGENT', 'WARNING', 'STATISTICAL_VOUCHER_OUTLIER', json_encode($anomalyCheck), 0, []);
+                }
+            }
+        }
+
         // Requirement 46.2: Auto-assign voucher_code and section_code
         $codeAssignment = $this->assignVoucherAndSectionCodes($header);
         if (!$codeAssignment['success']) {
