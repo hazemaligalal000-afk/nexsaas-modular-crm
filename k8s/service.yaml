@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexsaas-backend
+  labels:
+    app: nexsaas
+    component: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 9000
+    protocol: TCP
+    name: http
+  selector:
+    app: nexsaas
+    component: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexsaas-frontend
+  labels:
+    app: nexsaas
+    component: frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: nexsaas
+    component: frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexsaas-ai-engine
+  labels:
+    app: nexsaas
+    component: ai-engine
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: nexsaas
+    component: ai-engine
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-backend
+  namespace: nexsaas
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: php-backend
+  template:
+    metadata:
+      labels:
+        app: php-backend
+    spec:
+      containers:
+      - name: php
+        image: nexsaas/php-backend:latest
+        ports:
+        - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: app-secrets
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-hpa
+  namespace: nexsaas
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-backend
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

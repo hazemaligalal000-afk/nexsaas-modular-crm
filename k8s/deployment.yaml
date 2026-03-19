@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexsaas-backend
+  labels:
+    app: nexsaas
+    component: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nexsaas
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: nexsaas
+        component: backend
+    spec:
+      containers:
+      - name: php-fpm
+        image: nexsaas/backend:latest
+        ports:
+        - containerPort: 9000
+        env:
+        - name: APP_ENV
+          value: "production"
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: nexsaas-config
+              key: db_host
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: nexsaas-config
+              key: db_name
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: nexsaas-secrets
+              key: db_user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nexsaas-secrets
+              key: db_password
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: nexsaas-config
+              key: redis_host
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nexsaas-secrets
+              key: stripe_secret_key
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nexsaas-secrets
+              key: anthropic_api_key
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexsaas-frontend
+  labels:
+    app: nexsaas
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nexsaas
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: nexsaas
+        component: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nexsaas/frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexsaas-ai-engine
+  labels:
+    app: nexsaas
+    component: ai-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nexsaas
+      component: ai-engine
+  template:
+    metadata:
+      labels:
+        app: nexsaas
+        component: ai-engine
+    spec:
+      containers:
+      - name: fastapi
+        image: nexsaas/ai-engine:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nexsaas-secrets
+              key: anthropic_api_key
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: nexsaas-config
+              key: db_host
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"

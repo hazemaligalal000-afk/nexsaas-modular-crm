@@ -27,8 +27,9 @@ class Database {
                 
                 $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
                 self::$centralInstance = new PDO($dsn, $user, $pass, [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_PERSISTENT         => true, // Requirement 41.5: Connection Pooling
                 ]);
             } catch (PDOException $e) {
                 throw new \Exception("Central DB Connection Error");

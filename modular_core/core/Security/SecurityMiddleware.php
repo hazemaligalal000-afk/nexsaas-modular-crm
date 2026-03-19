@@ -7,8 +7,14 @@ namespace Core\Security;
  */
 class SecurityMiddleware {
     public function handle($request, $next) {
-        // Enforce HTTPS via HSTS
-        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+        // Requirement 59.1: Enforce HTTPS & HSTS
+        header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
+        
+        // Requirement 59.3: Content Security Policy (Master Spec Alignment)
+        header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.anthropic.com;");
+
+        // Requirement 59.4: IP-Based Rate Limiting
+        $this->enforceRateLimit($_SERVER['REMOTE_ADDR']);
 
         // Input sanitization
         $this->sanitize($request);
@@ -19,6 +25,22 @@ class SecurityMiddleware {
         }
 
         return $next($request);
+    }
+
+    private function enforceRateLimit(string $ip) {
+        // Adaptive rate limiting logically integrated
+        if (class_exists(\Core\Performance\CacheManager::class)) {
+            $redis = \Core\Performance\CacheManager::getInstance();
+            $key = "rate_limit:{$ip}";
+            $current = (int)($redis->get($key) ?: 0);
+            
+            if ($current > 100) { // 100 requests per minute
+                http_response_code(429);
+                exit("Rate limit exceeded. Please try again in a minute.");
+            }
+            
+            $redis->set($key, $current + 1, 60);
+        }
     }
 
     private function sanitize(&$data) {

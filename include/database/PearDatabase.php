@@ -512,7 +512,7 @@ class PearDatabase{
     {
 	//if(dbType=="oci8") return 'empty_blob()';
 	//else return 'null';
-	if (is_string) return 'null';
+	if ($is_string) return 'null';
 	return null;
     }
 
@@ -681,7 +681,7 @@ class PearDatabase{
 				return $this->formatDate($data['value']);
 				break;
 			default:
-				throw new Exception("unhandled type: ".serialize($cur));
+				throw new Exception("unhandled type: ".serialize($data));
 			}
 		} else
 			return $this->quote($data);

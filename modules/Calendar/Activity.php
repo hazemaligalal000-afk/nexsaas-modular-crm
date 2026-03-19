@@ -119,7 +119,7 @@ class Activity extends CRMEntity {
 		{
 			$this->insertIntoEntityTable("vtiger_seactivityrel", $module);
 		}
-		elseif($this->column_fields['parent_id']=='' && $insertion_mode=="edit")
+		elseif($this->column_fields['parent_id']=='' && $this->mode=="edit")
 		{
 			$this->deleteRelation("vtiger_seactivityrel");
 		}
@@ -128,7 +128,7 @@ class Activity extends CRMEntity {
 		{
 			$this->insertIntoEntityTable('vtiger_cntactivityrel', $module);
 		}
-		elseif($this->column_fields['contact_id'] =='' && $insertion_mode=="edit")
+		elseif($this->column_fields['contact_id'] =='' && $this->mode=="edit")
 		{
 			$this->deleteRelation('vtiger_cntactivityrel');
 		}
@@ -316,7 +316,7 @@ function insertIntoRecurringTable(& $recurObj)
 		$adb->pquery($recurring_insert, $rec_params);
 		unset($_SESSION['next_reminder_time']);
 		if($_REQUEST['set_reminder'] == 'Yes') {
-			$this->insertIntoReminderTable("vtiger_activity_reminder",$module,$current_id,'');
+			$this->insertIntoReminderTable("vtiger_activity_reminder",'Calendar',$current_id,'');
 		}
 	}
 }
@@ -666,8 +666,8 @@ function insertIntoRecurringTable(& $recurObj)
         $response = Array();
         $response['list'] = $list;
         $response['row_count'] = $rows_found;
-        $response['next_offset'] = $next_offset;
-        $response['previous_offset'] = $previous_offset;
+        $response['next_offset'] = $next_offset ?? 0;
+        $response['previous_offset'] = $previous_offset ?? 0;
 
 
 	$log->debug("Exiting process_list_query1 method ...");

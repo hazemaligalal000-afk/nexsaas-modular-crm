@@ -1,0 +1,9 @@
+parameters:
+  level: 8
+  paths:
+    - modular_core
+  excludePaths:
+    - modular_core/vendor/*
+  ignoreErrors:
+    - '#Property .* has no typehint specified.#'
+    - '#Call to an undefined method .*::getOne\(\).#'

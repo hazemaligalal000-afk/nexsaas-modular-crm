@@ -681,7 +681,6 @@ class VoucherService
             throw new \RuntimeException('Failed to insert journal entry line: ' . $this->db->ErrorMsg());
         }
     }
-}
 
     /**
      * Task 30.2: Implement voucher approval state machine

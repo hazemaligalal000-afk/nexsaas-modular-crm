@@ -19,6 +19,7 @@ from app.sentiment import router as sentiment_router
 from app.embeddings import router as embeddings_router
 from app.communications import router as communications_router
 from app.forecast import router as forecast_router
+from app.claude_ai import router as claude_ai_router
 
 app = FastAPI(
     title="AI Revenue OS — Intelligence Engine",
@@ -34,6 +35,7 @@ app.include_router(sentiment_router)
 app.include_router(embeddings_router)
 app.include_router(communications_router)
 app.include_router(forecast_router)
+app.include_router(claude_ai_router)
 
 
 @app.get("/health")

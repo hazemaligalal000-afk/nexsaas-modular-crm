@@ -75,49 +75,49 @@ def _build_feature_vector(features: dict[str, Any]) -> list[float]:
     ]
 
 
-def _predict_score(features: dict[str, Any]) -> tuple[int, float]:
-    """
-    Gradient-boosted model stub.
+from app.claude_client import call_claude
 
-    In production this would load a persisted sklearn GradientBoostingClassifier
-    (or XGBoost/LightGBM) from disk.  For now we use a deterministic weighted
-    formula that mirrors the feature importance a real model would learn, plus
-    a small random jitter to simulate model variance.
-
-    Returns:
-        (score: int, confidence: float)  — score clamped to [0, 100].
+async def _predict_score(features: dict[str, Any]) -> tuple[int, float]:
     """
+    Claude-3.5-Sonnet lead scoring logic (Requirement 35.1).
+    Attempts to call Claude for deep intent analysis, falling back to heuristic
+    scoring if API is unavailable or returns invalid result.
+    """
+    
+    # Enhanced system prompt according to Master Spec (Phase 8)
+    system_prompt = """You are the NexSaaS AI Revenue Analyst. 
+    Analyze the following lead profile and behavioural signals.
+    Predict the lead quality from 0 (junk) to 100 (ready-to-buy).
+    Return ONLY a single integer between 0 and 100."""
+    
+    prompt = f"Lead Features: {json.dumps(features)}"
+    
     try:
-        from sklearn.ensemble import GradientBoostingClassifier  # noqa: F401
-        # Stub: use the weighted formula below (no trained weights yet)
-    except ImportError:
+        raw_output = await call_claude(prompt, system_prompt)
+        # Parse numeric from Claude
+        if "MOCK" not in raw_output:
+            score = int("".join(filter(str.isdigit, raw_output)))
+            return max(0, min(100, score)), 0.94
+    except Exception:
         pass
 
+    # Fallback to existing heuristic logic (Gradient-boosted stub)
     fv = _build_feature_vector(features)
     email_eng, days_in_stage, total_msgs, company_size, source_quality = fv
-
-    # Weighted linear combination (mimics gradient-boosted feature importances)
     raw = (
         50.0                                    # base
-        + min(email_eng, 10) * 2.0             # engagement signal (cap at 10)
+        + min(email_eng, 10) * 2.0             # engagement signal
         + min(total_msgs, 20) * 0.5            # omnichannel activity
-        + min(company_size / 50.0, 4.0) * 3.0 # company size (cap contribution)
+        + min(company_size / 50.0, 4.0) * 3.0 # company size
         + source_quality * 10.0                # high-quality source bonus
         - min(days_in_stage / 7.0, 5.0) * 3.0 # recency penalty
     )
-
-    # Small deterministic jitter based on lead_id (reproducible per lead)
-    jitter = (hash(str(features.get("lead_id", 0))) % 11) - 5  # [-5, +5]
+    jitter = (hash(str(features.get("lead_id", 0))) % 11) - 5
     raw += jitter
-
     score = int(round(max(0.0, min(100.0, raw))))
-
-    # Confidence: higher when features are richer
     non_zero = sum(1 for v in fv if v != 0.0)
     confidence = round(0.50 + non_zero * 0.08 + random.uniform(-0.02, 0.02), 4)
-    confidence = max(0.0, min(1.0, confidence))
-
-    return score, confidence
+    return max(0, min(100, score)), max(0.0, min(1.0, confidence))
 
 
 # ---------------------------------------------------------------------------
@@ -126,24 +126,16 @@ def _predict_score(features: dict[str, Any]) -> tuple[int, float]:
 
 
 @router.post("/predict/lead-score", response_model=LeadScoreResponse)
-def predict_lead_score(request: LeadScoreRequest) -> LeadScoreResponse:
+async def predict_lead_score(request: LeadScoreRequest) -> LeadScoreResponse:
     """
     Compute a Lead Score for the given lead.
-
-    - Score is an integer in [0, 100] (validated and clamped).
-    - Confidence is a float in [0.0, 1.0].
-    - model_version is always "1.0.0" for this stub.
-
-    Requirements: 8.2, 35.1, 35.2, 35.3, 35.4, 35.5
+    (Claude-3.5-Sonnet integration enabled - Requirement 35.1)
     """
-    # Req 35.3: reject requests with missing or blank tenant_id
     if not request.tenant_id or not request.tenant_id.strip():
-        raise HTTPException(status_code=400, detail="tenant_id is required and must not be blank")
+        raise HTTPException(status_code=400, detail="tenant_id is required")
 
-    # Inject lead_id into features so the jitter is reproducible per lead
     features_with_id = {**request.features, "lead_id": request.lead_id}
-
-    raw_score, confidence = _predict_score(features_with_id)
+    raw_score, confidence = await _predict_score(features_with_id)
 
     # Clamp and cast — belt-and-suspenders even though _predict_score already clamps
     score = max(0, min(100, int(raw_score)))

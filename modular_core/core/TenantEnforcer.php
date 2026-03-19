@@ -47,7 +47,7 @@ class TenantEnforcer {
         self::$tenantConfig = $stmt->fetch();
     }
 
-    public static function getTenantId() {
+    public static function getTenantId(): ?string {
         return self::$currentTenantId;
     }
 
