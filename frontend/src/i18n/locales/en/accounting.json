@@ -1,0 +1,111 @@
+{
+  "coa": {
+    "title": "Chart of Accounts",
+    "create": "Create Account",
+    "accountCode": "Account Code",
+    "accountName": "Account Name",
+    "accountType": "Account Type",
+    "balance": "Balance",
+    "blocked": "Blocked",
+    "hierarchy": "Account Hierarchy"
+  },
+  "vouchers": {
+    "title": "Vouchers",
+    "create": "Create Voucher",
+    "voucherCode": "Voucher Code",
+    "sectionCode": "Section Code",
+    "finPeriod": "Financial Period",
+    "date": "Date",
+    "description": "Description",
+    "debit": "Debit",
+    "credit": "Credit",
+    "status": "Status",
+    "draft": "Draft",
+    "submitted": "Submitted",
+    "approved": "Approved",
+    "posted": "Posted",
+    "reversed": "Reversed",
+    "approve": "Approve",
+    "post": "Post",
+    "reverse": "Reverse",
+    "copy": "Copy Voucher"
+  },
+  "fx": {
+    "title": "Foreign Exchange",
+    "exchangeRate": "Exchange Rate",
+    "currency": "Currency",
+    "realizedGain": "Realized Gain",
+    "realizedLoss": "Realized Loss",
+    "unrealizedGain": "Unrealized Gain",
+    "unrealizedLoss": "Unrealized Loss",
+    "revaluation": "FX Revaluation"
+  },
+  "ar": {
+    "title": "Accounts Receivable",
+    "invoice": "Invoice",
+    "payment": "Payment",
+    "aging": "Aging Report",
+    "overdue": "Overdue"
+  },
+  "ap": {
+    "title": "Accounts Payable",
+    "bill": "Bill",
+    "payment": "Payment",
+    "aging": "Aging Report",
+    "withholdingTax": "Withholding Tax"
+  },
+  "bank": {
+    "title": "Bank & Cash",
+    "bankAccount": "Bank Account",
+    "pettyCash": "Petty Cash",
+    "cashCall": "Cash Call",
+    "reconciliation": "Bank Reconciliation",
+    "statement": "Bank Statement",
+    "cashPosition": "Cash Position"
+  },
+  "assets": {
+    "title": "Fixed Assets",
+    "assetRegister": "Asset Register",
+    "depreciation": "Depreciation",
+    "disposal": "Asset Disposal",
+    "revaluation": "Asset Revaluation",
+    "netBookValue": "Net Book Value"
+  },
+  "payroll": {
+    "title": "Payroll",
+    "payrollRun": "Payroll Run",
+    "payslip": "Payslip",
+    "grossPay": "Gross Pay",
+    "deductions": "Deductions",
+    "netPay": "Net Pay",
+    "socialInsurance": "Social Insurance"
+  },
+  "partners": {
+    "title": "Partners",
+    "distribution": "Profit Distribution",
+    "withdrawal": "Withdrawal",
+    "dues": "Partner Dues",
+    "capital": "Share Capital"
+  },
+  "reports": {
+    "title": "Financial Reports",
+    "trialBalance": "Trial Balance",
+    "profitLoss": "Profit & Loss",
+    "balanceSheet": "Balance Sheet",
+    "cashFlow": "Cash Flow Statement",
+    "consolidated": "Consolidated Statements"
+  },
+  "period": {
+    "title": "Financial Period",
+    "open": "Open Period",
+    "close": "Close Period",
+    "lock": "Lock Period",
+    "current": "Current Period"
+  },
+  "company": {
+    "title": "Company",
+    "companyCode": "Company Code",
+    "switchCompany": "Switch Company",
+    "multiCompany": "Multi-Company"
+  }
+}

@@ -18,7 +18,9 @@ CREATE TABLE IF NOT EXISTS chart_of_accounts (
     account_level INT NOT NULL,  -- 1=Category, 2=Group, 3=Sub-group, 4=Account, 5=Sub-account
     account_type VARCHAR(50) NOT NULL,  -- Asset, Liability, Equity, Income, Expense, Cost, Allocation
     account_subtype VARCHAR(100),  -- Bank, Cash, AR, AP, Fixed Asset, etc.
-    currency_restriction VARCHAR(2),  -- FK to currencies.code (NULL = all currencies allowed)
+    currency_restriction VARCHAR(2),  -- FK to currencies.code (NULL = all currencies allowed) - DEPRECATED, use allowed_currencies
+    allowed_currencies VARCHAR(2)[] DEFAULT '{}',  -- Array of allowed currency codes (empty = all allowed)
+    allowed_companies VARCHAR(2)[] DEFAULT '{}',  -- Array of allowed company codes (empty = all allowed)
     is_active BOOLEAN DEFAULT TRUE,
     is_blocked BOOLEAN DEFAULT FALSE,  -- Prevent new postings
     allow_posting BOOLEAN DEFAULT TRUE,  -- FALSE for parent/summary accounts
@@ -200,3 +202,29 @@ CREATE INDEX idx_employees_company ON employees(tenant_id, company_code) WHERE d
 CREATE INDEX idx_employees_no ON employees(tenant_id, company_code, employee_no) WHERE deleted_at IS NULL;
 
 COMMENT ON TABLE employees IS 'Employee master for payroll and journal entry linkage';
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- 7. ALLOCATION ACCOUNT RULES
+-- ──────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS allocation_account_rules (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id UUID NOT NULL,
+    company_code VARCHAR(2) NOT NULL,
+    source_account_code VARCHAR(20) NOT NULL,  -- FK to chart_of_accounts.account_code (must be type='Allocation')
+    target_account_code VARCHAR(20) NOT NULL,  -- FK to chart_of_accounts.account_code
+    allocation_percentage DECIMAL(5,2) NOT NULL,  -- 0.00 to 100.00
+    is_active BOOLEAN DEFAULT TRUE,
+    created_by VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
+    UNIQUE(tenant_id, company_code, source_account_code, target_account_code, deleted_at),
+    CONSTRAINT chk_allocation_percentage CHECK (allocation_percentage >= 0 AND allocation_percentage <= 100)
+);
+
+CREATE INDEX idx_allocation_rules_tenant ON allocation_account_rules(tenant_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_allocation_rules_company ON allocation_account_rules(tenant_id, company_code) WHERE deleted_at IS NULL;
+CREATE INDEX idx_allocation_rules_source ON allocation_account_rules(tenant_id, company_code, source_account_code) WHERE deleted_at IS NULL AND is_active = TRUE;
+
+COMMENT ON TABLE allocation_account_rules IS 'Allocation rules for distributing amounts from allocation accounts to target accounts';
+COMMENT ON COLUMN allocation_account_rules.allocation_percentage IS 'Percentage of source amount to allocate to target account (sum must equal 100 per source)';

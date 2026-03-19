@@ -11,16 +11,15 @@ use Core\Auth\JwtManager;
 
 class TenantEnforcer {
     private static $currentTenantId = null;
+    private static $currentCompanyCode = '01'; // Default to Company 01
     private static $currentUserRole = null;
     private static $tenantConfig = null;
 
     /**
-     * Initializes the tenant context from the Bearer Token in the Authorization header.
+     * Initializes the tenant and company context from the Bearer Token in the Authorization header.
      */
     public static function initializeFromToken($authHeader) {
         if (!$authHeader || stripos($authHeader, 'Bearer ') !== 0) {
-            // Some endpoints (like login) are public. 
-            // The ModuleManager will handle RBAC check later.
             return;
         }
 
@@ -30,6 +29,7 @@ class TenantEnforcer {
             $payload = JwtManager::decode($token);
             
             self::$currentTenantId = $payload['tenant_id'];
+            self::$currentCompanyCode = $payload['company_code'] ?? '01'; // Switched via JWT
             self::$currentUserRole = $payload['roles'] ?? [];
             
             // Fetch Tenant Config (Shared vs Dedicated) from Central DB cache/Redis
@@ -41,8 +41,6 @@ class TenantEnforcer {
     }
 
     private static function resolveTenantConfig($tenantId) {
-        // In a real system, we consult Redis or a Central DB.
-        // For now, we fetch from the 'tenants' table.
         $pdo = \Core\Database::getCentralConnection();
         $stmt = $pdo->prepare("SELECT db_strategy, db_config FROM tenants WHERE id = ? LIMIT 1");
         $stmt->execute([$tenantId]);
@@ -53,8 +51,12 @@ class TenantEnforcer {
         return self::$currentTenantId;
     }
 
-    public static function getRole() {
-        return self::$currentUserRole;
+    public static function getCompanyCode() {
+        return self::$currentCompanyCode;
+    }
+
+    public static function setCompanyCode($code) {
+        self::$currentCompanyCode = $code;
     }
 
     public static function getTenantConfig() {

@@ -33,10 +33,13 @@ namespace Core;
  */
 final class Response
 {
-    public function __construct(
-        public readonly array $body,
-        public readonly int   $status = 200,
-    ) {}
+    public array $body;
+    public int $status;
+
+    public function __construct(array $body, int $status = 200) {
+        $this->body = $body;
+        $this->status = $status;
+    }
 }
 
 abstract class BaseController
@@ -88,7 +91,11 @@ abstract class BaseController
             'meta'    => $this->buildMeta(),         // Req 3.4
         ];
 
-        return new Response($body, $status);
+        // Apply global serializer for consistent key ordering and monetary formatting (Req 60.1)
+        $serializer = new \Core\Serializers\JsonSerializer();
+        $formattedBody = json_decode($serializer->serialize($body), true);
+
+        return new Response($formattedBody, $status);
     }
 
     // -------------------------------------------------------------------------

@@ -1,0 +1,46 @@
+{
+  "inventory": {
+    "title": "المخزون",
+    "items": "الأصناف",
+    "warehouses": "المستودعات",
+    "stockMovement": "حركة المخزون",
+    "stockTake": "الجرد",
+    "reorderLevel": "مستوى إعادة الطلب",
+    "valuation": "طريقة التقييم",
+    "fifo": "الوارد أولاً صادر أولاً",
+    "lifo": "الوارد أخيراً صادر أولاً",
+    "weightedAverage": "المتوسط المرجح"
+  },
+  "procurement": {
+    "title": "المشتريات",
+    "purchaseRequisition": "طلب شراء",
+    "purchaseOrder": "أمر شراء",
+    "rfq": "طلب عرض أسعار",
+    "goodsReceipt": "استلام بضاعة",
+    "supplier": "مورد"
+  },
+  "hr": {
+    "title": "الموارد البشرية",
+    "employees": "الموظفون",
+    "departments": "الأقسام",
+    "leave": "إدارة الإجازات",
+    "onboarding": "التوظيف",
+    "offboarding": "إنهاء الخدمة",
+    "orgChart": "الهيكل التنظيمي"
+  },
+  "projects": {
+    "title": "المشاريع",
+    "tasks": "المهام",
+    "milestones": "المعالم",
+    "timeTracking": "تتبع الوقت",
+    "gantt": "مخطط جانت",
+    "completion": "نسبة الإنجاز"
+  },
+  "manufacturing": {
+    "title": "التصنيع",
+    "bom": "قائمة المواد",
+    "workOrder": "أمر عمل",
+    "production": "الإنتاج",
+    "components": "المكونات"
+  }
+}

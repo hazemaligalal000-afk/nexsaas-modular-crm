@@ -1,0 +1,83 @@
+{
+  "app": {
+    "name": "نكس ساس",
+    "tagline": "نظام تشغيل الإيرادات بالذكاء الاصطناعي"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "crm": "إدارة العملاء",
+    "erp": "تخطيط موارد المؤسسة",
+    "accounting": "المحاسبة",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "import": "استيراد",
+    "refresh": "تحديث",
+    "submit": "إرسال",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "confirm": "تأكيد"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "warning": "تحذير",
+    "info": "معلومات",
+    "noData": "لا توجد بيانات متاحة",
+    "selectOption": "اختر خياراً",
+    "required": "مطلوب",
+    "optional": "اختياري",
+    "yes": "نعم",
+    "no": "لا",
+    "all": "الكل",
+    "none": "لا شيء",
+    "other": "أخرى"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "email": "عنوان البريد الإلكتروني غير صالح",
+    "phone": "رقم الهاتف غير صالح",
+    "url": "عنوان URL غير صالح",
+    "minLength": "الحد الأدنى للطول هو {{min}} حرفاً",
+    "maxLength": "الحد الأقصى للطول هو {{max}} حرفاً",
+    "min": "الحد الأدنى للقيمة هو {{min}}",
+    "max": "الحد الأقصى للقيمة هو {{max}}",
+    "pattern": "تنسيق غير صالح"
+  },
+  "date": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "tomorrow": "غداً",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "custom": "نطاق مخصص"
+  },
+  "pagination": {
+    "showing": "عرض {{from}} إلى {{to}} من {{total}} إدخال",
+    "page": "صفحة",
+    "of": "من",
+    "rowsPerPage": "صفوف لكل صفحة"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "وضع علامة مقروء على الكل",
+    "noNotifications": "لا توجد إشعارات",
+    "viewAll": "عرض الكل"
+  }
+}
