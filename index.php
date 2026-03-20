@@ -1,4 +1,34 @@
 <?php
+/**
+ * NexSaaS CRM — Security Hardening (Requirement 0.3)
+ */
+
+define('NEXSAAS_START_TIME', microtime(true));
+
+// ─── HTTPS ENFORCEMENT & SECURITY HEADERS ──────────────────────────────────
+function apply_security_hardening() {
+    // Force HTTPS if not on local
+    if (getenv('APP_ENV') !== 'local') {
+        if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
+            header("Location: https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], true, 301);
+            exit();
+        }
+    }
+
+    // Security Headers
+    header("X-Frame-Options: SAMEORIGIN");
+    header("X-Content-Type-Options: nosniff");
+    header("X-XSS-Protection: 1; mode=block");
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src 'self' https://js.stripe.com;");
+    header("Referrer-Policy: strict-origin-when-cross-origin");
+    header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
+}
+
+if (file_exists('config.inc.php')) {
+    require_once('config.inc.php'); // Load env via config.inc.php
+    apply_security_hardening();
+}
+
 /*********************************************************************************
  * The contents of this file are subject to the SugarCRM Public License Version 1.1.2
  * ("License"); You may not use this file except in compliance with the 

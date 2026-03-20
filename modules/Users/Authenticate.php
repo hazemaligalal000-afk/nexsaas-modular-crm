@@ -24,6 +24,16 @@ require_once('modules/Users/Users.php');
 require_once('modules/Users/CreateUserPrivilegeFile.php');
 require_once('include/logging.php');
 require_once('user_privileges/audit_trail.php');
+require_once('include/utils/RateLimiter.php');
+
+$rateLimiter = new RateLimiter();
+$ip = $_SERVER['REMOTE_ADDR'];
+
+if (!$rateLimiter->check('login_ip:' . $ip, 5, 15)) {
+    $_SESSION['login_error'] = "Too many login attempts. Please try again in 15 minutes.";
+    header("Location: index.php");
+    exit;
+}
 
 global $mod_strings, $default_charset;
 
