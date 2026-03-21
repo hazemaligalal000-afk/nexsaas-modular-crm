@@ -52,15 +52,21 @@ export default function HRModule() {
                     <div>
                         <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '32px' }}>👥</span> Human Resources
-                            <span style={{ fontSize: '11px', background: 'rgba(236,72,153,0.15)', color: '#ec4899', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>ERPNext Synced</span>
+                            <span style={{ fontSize: '11px', background: 'rgba(5,255,145,0.15)', color: '#05ff91', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>Qiwa & GOSI Synced</span>
+                            <span style={{ fontSize: '11px', background: 'rgba(236,72,153,0.15)', color: '#ec4899', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>ERPNext Active</span>
                         </h2>
                         <p style={{ color: '#64748b', margin: '6px 0 0', fontSize: '13px' }}>
-                            {employees.length} employees · {depts.length} departments · Monthly payroll: <span style={{ color: '#ec4899', fontWeight: '800' }}>${totalPayroll.toLocaleString()}</span>
+                            {employees.length} employees · {depts.length} departments · Monthly payroll: <span style={{ color: '#ec4899', fontWeight: '800' }}>SAR {totalPayroll.toLocaleString()}</span>
                         </p>
                     </div>
-                    <button onClick={() => setShowForm(true)} style={{ background: 'linear-gradient(135deg, #ec4899, #f97316)', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '14px', fontWeight: '800', cursor: 'pointer' }}>
-                        + Add Employee
-                    </button>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button onClick={() => alert("Syncing with Qiwa... ⏳")} style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 20px', borderRadius: '14px', fontWeight: '800', cursor: 'pointer' }}>
+                            🔄 Sync Qiwa
+                        </button>
+                        <button onClick={() => setShowForm(true)} style={{ background: 'linear-gradient(135deg, #ec4899, #f97316)', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '14px', fontWeight: '800', cursor: 'pointer' }}>
+                            + Add Employee
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats */}

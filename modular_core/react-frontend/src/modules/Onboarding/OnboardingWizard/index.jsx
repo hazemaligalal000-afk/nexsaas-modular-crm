@@ -12,16 +12,40 @@ export default function OnboardingWizard() {
   const [formData, setFormData] = useState({
      email: '', password: '', 
      company_name: '', industry: 'SaaS', 
-     primary_color: '#1d4ed8', 
+     primary_color: '#3b82f6', 
      tier: 'starter'
   });
+  const [loading, setLoading] = useState(false);
 
   const nextStep = () => setStep(s => Math.min(STEPS.length, s + 1));
   const prevStep = () => setStep(s => Math.max(1, s - 1));
 
-  const handleFinish = () => {
-     alert("Provisioning your workspace... Please wait 5 seconds. 🏗️");
-     window.location.href = "/dashboard";
+  const handleFinish = async () => {
+     setLoading(true);
+     try {
+        const response = await fetch('/api/onboarding/register', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+              company_name: formData.company_name,
+              admin_name: 'Admin User', // Placeholder for name field
+              admin_email: formData.email,
+              admin_password: formData.password
+           })
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+           localStorage.setItem('access_token', result.data.token);
+           window.location.href = "/dashboard";
+        } else {
+           alert("Provisioning failed: " + result.error);
+        }
+     } catch (err) {
+        alert("System error during provisioning. Check if modular_core is running.");
+     } finally {
+        setLoading(false);
+     }
   };
 
   return (

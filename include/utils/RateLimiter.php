@@ -15,7 +15,7 @@ class RateLimiter {
         }
 
         try {
-            $this->redis = new Redis();
+            $this->redis = new \Redis();
             $host = getenv('REDIS_HOST') ?: '127.0.0.1';
             $port = getenv('REDIS_PORT') ?: 6379;
             $pass = getenv('REDIS_PASSWORD');

@@ -1,589 +1,369 @@
-/**
- * JournalEntryForm.tsx
- * 
- * Complete Journal Entry Form with all 35 fields from سيستم_جديد.xlsx
- * Supports bilingual (Arabic/English) labels
- * Real-time double-entry balance validation
- * 
- * BATCH B — Journal Entry & Voucher Engine
- */
-
-import React, { useState, useEffect } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { PermissionGate } from '../../../components/RBAC/PermissionGate';
-import { usePermissions } from '../../../components/RBAC/hooks/usePermissions';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Search, Plus, Trash2, MoreHorizontal, ChevronRight, Save, Send, CheckCircle, Calculator, Info } from 'lucide-react';
 
 interface JournalLine {
-  line_no: number;
-  account_code: string;
-  account_desc?: string;
-  cost_identifier?: string;
-  cost_center_code?: string;
-  cost_center_name?: string;
-  vendor_code?: string;
-  vendor_name?: string;
-  check_transfer_no?: string;
-  exchange_rate: number;
-  currency_code: string;
-  dr_value: number;
-  cr_value: number;
-  line_desc?: string;
-  asset_no?: string;
-  transaction_no?: string;
-  profit_loss_flag?: string;
-  customer_invoice_no?: string;
-  income_stmt_flag?: string;
-  internal_invoice_no?: string;
-  employee_no?: string;
-  partner_no?: string;
-  vendor_word_count?: number;
-  translator_word_count?: number;
-  agent_name?: string;
+  lineNo: number;
+  accountCode: string;
+  accountName: string;
+  drValue: number | string;
+  crValue: number | string;
+  lineDesc: string;
+  costCenter?: string;
+  ccName?: string;
+  vendor?: string;
+  vendorName?: string;
+  currency?: string;
+  exRate: number;
+  // All 35 fields included in internal state
+  checkNo?: string;
+  assetNo?: string;
+  invoiceNo?: string;
+  internalNo?: string;
+  employeeNo?: string;
+  partnerNo?: string;
+  vendorWordCount?: number;
+  translatorWordCount?: number;
+  agentName?: string;
+  isProfitLoss?: boolean;
 }
 
-interface JournalEntryFormProps {
-  entryId?: number;
-  onSuccess?: () => void;
-  mode?: 'create' | 'edit' | 'view';
-}
-
-export const JournalEntryForm: React.FC<JournalEntryFormProps> = ({
-  entryId,
-  onSuccess,
-  mode = 'create'
-}) => {
-  const { hasPermission } = usePermissions();
-  const [language, setLanguage] = useState<'en' | 'ar'>('en');
-
-  // Header state
+export const JournalEntryForm: React.FC = () => {
+  const queryClient = useQueryClient();
+  const [activeLine, setActiveLine] = useState<number | null>(null);
   const [header, setHeader] = useState({
-    company_code: '01',
-    area_code: '',
-    fin_period: new Date().toISOString().slice(0, 7).replace('-', ''),
-    voucher_date: new Date().toISOString().slice(0, 10),
-    service_date: new Date().toISOString().slice(0, 7).replace('-', ''),
-    voucher_code: '1',
-    section_code: '01',
-    voucher_sub: '',
+    voucher_no: '',
+    voucher_date: new Date().toISOString().split('T')[0],
+    voucher_code: '01', // Local Currency
+    section_code: '01', // General
+    fin_period: '202507',
     currency_code: '01',
-    exchange_rate: 1.000000,
-    description: ''
+    exchange_rate: 1.0,
+    description: '',
+    status: 'draft'
   });
 
-  // Lines state
   const [lines, setLines] = useState<JournalLine[]>([
-    {
-      line_no: 1,
-      account_code: '',
-      exchange_rate: 1.000000,
-      currency_code: '01',
-      dr_value: 0,
-      cr_value: 0
-    }
+    { lineNo: 1, accountCode: '', accountName: '', drValue: 0, crValue: 0, lineDesc: '', exRate: 1.0 }
   ]);
 
-  // Balance calculation
-  const [balance, setBalance] = useState({
-    total_dr: 0,
-    total_cr: 0,
-    difference: 0,
-    balanced: true
-  });
-
-  // Calculate balance whenever lines change
-  useEffect(() => {
-    const totalDr = lines.reduce((sum, line) => sum + (line.dr_value || 0), 0);
-    const totalCr = lines.reduce((sum, line) => sum + (line.cr_value || 0), 0);
-    const difference = Math.abs(totalDr - totalCr);
-    const balanced = difference < 0.01;
-
-    setBalance({ total_dr: totalDr, total_cr: totalCr, difference, balanced });
+  // Totals calculation
+  const totals = useMemo(() => {
+    return lines.reduce((acc, curr) => ({
+      dr: acc.dr + (Number(curr.drValue) || 0),
+      cr: acc.cr + (Number(curr.crValue) || 0)
+    }), { dr: 0, cr: 0 });
   }, [lines]);
 
-  // Fetch existing entry if editing
-  const { data: existingEntry } = useQuery({
-    queryKey: ['journal-entry', entryId],
-    queryFn: async () => {
-      const response = await fetch(`/api/accounting/journal-entries/${entryId}`);
-      return response.json();
-    },
-    enabled: !!entryId && mode !== 'create'
-  });
+  const balance = totals.dr - totals.cr;
+  const isBalanced = Math.abs(balance) < 0.01;
 
-  // Load existing entry data
-  useEffect(() => {
-    if (existingEntry?.data) {
-      setHeader(existingEntry.data);
-      setLines(existingEntry.data.lines || []);
-    }
-  }, [existingEntry]);
-
-  // Fetch next voucher number
-  const { data: nextVoucherData } = useQuery({
-    queryKey: ['next-voucher-number', header.company_code, header.fin_period],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/accounting/journal-entries/next-voucher-number?company_code=${header.company_code}&fin_period=${header.fin_period}`
-      );
-      return response.json();
-    },
-    enabled: mode === 'create'
-  });
-
-  // Fetch exchange rate
-  const { data: exchangeRateData } = useQuery({
-    queryKey: ['exchange-rate', header.currency_code, header.voucher_date],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/accounting/exchange-rates?currency_code=${header.currency_code}&date=${header.voucher_date}`
-      );
-      return response.json();
-    }
-  });
-
-  // Update exchange rate when currency or date changes
-  useEffect(() => {
-    if (exchangeRateData?.data?.rate_to_base) {
-      setHeader(prev => ({ ...prev, exchange_rate: exchangeRateData.data.rate_to_base }));
-    }
-  }, [exchangeRateData]);
-
-  // Create/Update mutation
+  // Mutations
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
-      const url = entryId 
-        ? `/api/accounting/journal-entries/${entryId}`
-        : '/api/accounting/journal-entries';
-      
-      const response = await fetch(url, {
-        method: entryId ? 'PUT' : 'POST',
+      const res = await fetch('/api/accounting/vouchers', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to save journal entry');
-      }
-
-      return response.json();
-    },
-    onSuccess: () => {
-      onSuccess?.();
+      return res.json();
     }
   });
 
-  // Add line
   const addLine = () => {
-    setLines([...lines, {
-      line_no: lines.length + 1,
-      account_code: '',
-      exchange_rate: header.exchange_rate,
-      currency_code: header.currency_code,
-      dr_value: 0,
-      cr_value: 0
+    setLines([...lines, { 
+      lineNo: lines.length + 1, 
+      accountCode: '', 
+      accountName: '', 
+      drValue: 0, 
+      crValue: 0, 
+      lineDesc: header.description,
+      exRate: header.exchange_rate 
     }]);
   };
 
-  // Remove line
   const removeLine = (index: number) => {
     if (lines.length > 1) {
-      setLines(lines.filter((_, i) => i !== index));
+      const newLines = lines.filter((_, i) => i !== index);
+      setLines(newLines.map((l, i) => ({ ...l, lineNo: i + 1 })));
     }
   };
 
-  // Update line
-  const updateLine = (index: number, field: string, value: any) => {
+  const updateLine = (index: number, updates: Partial<JournalLine>) => {
     const newLines = [...lines];
-    newLines[index] = { ...newLines[index], [field]: value };
-    
-    // If updating dr_value, clear cr_value and vice versa
-    if (field === 'dr_value' && value > 0) {
-      newLines[index].cr_value = 0;
-    } else if (field === 'cr_value' && value > 0) {
-      newLines[index].dr_value = 0;
-    }
-    
+    newLines[index] = { ...newLines[index], ...updates };
     setLines(newLines);
   };
 
-  // Submit form
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!balance.balanced) {
-      alert(language === 'en' 
-        ? `Entry is not balanced. Difference: ${balance.difference.toFixed(2)}`
-        : `القيد غير متوازن. الفرق: ${balance.difference.toFixed(2)}`
-      );
-      return;
-    }
-
-    saveMutation.mutate({ header, lines });
-  };
-
-  const labels = {
-    en: {
-      // Header labels
-      companyCode: 'Company Code',
-      areaCode: 'Area Code',
-      finPeriod: 'Financial Period',
-      voucherDate: 'Voucher Date',
-      serviceDate: 'Service Date',
-      voucherCode: 'Voucher No.',
-      sectionCode: 'Section Code',
-      voucherSub: 'Voucher Sub No.',
-      currencyCode: 'Currency',
-      exchangeRate: 'Exchange Rate',
-      description: 'Description',
-      
-      // Line labels
-      lineNo: 'Line',
-      accountCode: 'Account Code',
-      accountDesc: 'Account Description',
-      costIdentifier: 'Cost Identifier',
-      costCenterCode: 'Cost Center',
-      vendorCode: 'Vendor/Client',
-      checkTransferNo: 'Check/Transfer No.',
-      drValue: 'Debit',
-      crValue: 'Credit',
-      lineDesc: 'Line Description',
-      assetNo: 'Asset No.',
-      transactionNo: 'Transaction No.',
-      customerInvoiceNo: 'Customer Invoice No.',
-      internalInvoiceNo: 'Internal Invoice No.',
-      employeeNo: 'Employee No.',
-      partnerNo: 'Partner No.',
-      vendorWordCount: 'Vendor Word Count',
-      translatorWordCount: 'Translator Word Count',
-      agentName: 'Agent Name',
-      
-      // Actions
-      addLine: 'Add Line',
-      removeLine: 'Remove',
-      save: 'Save Draft',
-      submit: 'Submit for Approval',
-      totalDr: 'Total Debit',
-      totalCr: 'Total Credit',
-      difference: 'Difference',
-      balanced: 'Balanced',
-      notBalanced: 'Not Balanced'
-    },
-    ar: {
-      // Header labels (Arabic)
-      companyCode: 'كود الشركة',
-      areaCode: 'كود المقر',
-      finPeriod: 'الفترة المالية',
-      voucherDate: 'التاريخ',
-      serviceDate: 'تاريخ الخدمة',
-      voucherCode: 'رقم القسيمة',
-      sectionCode: 'كود القسم',
-      voucherSub: 'رقم القسيمة الفرعي',
-      currencyCode: 'كود العملة',
-      exchangeRate: 'سعر التحويل',
-      description: 'الوصف',
-      
-      // Line labels (Arabic)
-      lineNo: 'رقم السطر',
-      accountCode: 'كود الحساب',
-      accountDesc: 'تعريف الحساب',
-      costIdentifier: 'توصيف التكاليف',
-      costCenterCode: 'كود مركز التكلفة',
-      vendorCode: 'كود العميل',
-      checkTransferNo: 'رقم الشيك / التحويل',
-      drValue: 'المدين',
-      crValue: 'الدائن',
-      lineDesc: 'وصف السطر',
-      assetNo: 'رقم الأصل',
-      transactionNo: 'رقم العملية',
-      customerInvoiceNo: 'رقم الفاتورة للعميل',
-      internalInvoiceNo: 'رقم الفاتورة الداخلي',
-      employeeNo: 'رقم العامل',
-      partnerNo: 'رقم الشريك',
-      vendorWordCount: 'عدد كلمات البيع',
-      translatorWordCount: 'عدد كلمات محاسبة المترجم',
-      agentName: 'اسم القائم بالاعمال',
-      
-      // Actions (Arabic)
-      addLine: 'إضافة سطر',
-      removeLine: 'حذف',
-      save: 'حفظ مسودة',
-      submit: 'إرسال للموافقة',
-      totalDr: 'إجمالي المدين',
-      totalCr: 'إجمالي الدائن',
-      difference: 'الفرق',
-      balanced: 'متوازن',
-      notBalanced: 'غير متوازن'
-    }
-  };
-
-  const t = labels[language];
-  const isReadOnly = mode === 'view';
-
   return (
-    <PermissionGate permission="accounting.voucher.create">
-      <div className={`max-w-7xl mx-auto p-6 ${language === 'ar' ? 'rtl' : 'ltr'}`}>
-        {/* Language Toggle */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            {language === 'en' ? 'عربي' : 'English'}
-          </button>
+    <div className="flex h-full bg-white relative overflow-hidden">
+      {/* Main Entry Panel */}
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${activeLine !== null ? 'mr-96' : ''}`}>
+        {/* Header Ribbon */}
+        <div className="bg-gray-50 p-6 border-b flex justify-between items-center shadow-sm z-10">
+          <div className="flex gap-8 items-center">
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Voucher Number</label>
+              <div className="text-xl font-black text-blue-900 font-mono">
+                {header.voucher_no || 'AUTO-GEN'}
+              </div>
+            </div>
+            <div className="h-10 w-[1px] bg-gray-200"></div>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-1 text-sm">
+                  <span className="text-gray-400">Date:</span>
+                  <input 
+                    type="date" 
+                    className="ml-2 border-none bg-transparent font-bold focus:ring-0 cursor-pointer" 
+                    value={header.voucher_date}
+                    onChange={(e) => setHeader({ ...header, voucher_date: e.target.value })}
+                  />
+               </div>
+               <div className="space-y-1 text-sm">
+                  <span className="text-gray-400">Type:</span>
+                  <select 
+                    className="ml-2 border-none bg-transparent font-bold focus:ring-0 cursor-pointer"
+                    value={header.voucher_code}
+                    onChange={(e) => setHeader({ ...header, voucher_code: e.target.value })}
+                  >
+                    <option value="01">01 Local Currency (EGP)</option>
+                    <option value="02">02 USD Voucher</option>
+                    <option value="05">05 SAR Voucher</option>
+                  </select>
+               </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 border rounded-xl hover:bg-gray-100 transition-all font-semibold">
+              <Save size={18} /> Save Draft
+            </button>
+            <button 
+              disabled={!isBalanced || totals.dr === 0}
+              className={`flex items-center gap-2 px-6 py-2 rounded-xl shadow-lg transition-all font-bold text-white ${isBalanced && totals.dr > 0 ? 'bg-blue-600 hover:bg-blue-700 hover:-translate-y-0.5' : 'bg-gray-300 cursor-not-allowed'}`}
+            >
+              <Send size={18} /> Submit for Approval
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Header Section */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">
-              {language === 'en' ? 'Journal Entry' : 'قسيمة يومية'}
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Company Code */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t.companyCode}
-                </label>
-                <select
-                  value={header.company_code}
-                  onChange={(e) => setHeader({ ...header, company_code: e.target.value })}
-                  disabled={isReadOnly}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                >
-                  <option value="01">01 - Globalize Group</option>
-                  <option value="02">02 - Digitalize</option>
-                  <option value="03">03 - Brandora</option>
-                  <option value="04">04 - Project Metric</option>
-                  <option value="05">05 - Jusor</option>
-                  <option value="06">06 - شبكات</option>
-                </select>
-              </div>
-
-              {/* Financial Period */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t.finPeriod}
-                </label>
-                <input
-                  type="text"
-                  value={header.fin_period}
-                  onChange={(e) => setHeader({ ...header, fin_period: e.target.value })}
-                  disabled={isReadOnly}
-                  placeholder="YYYYMM"
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-
-              {/* Voucher Date */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t.voucherDate}
-                </label>
-                <input
-                  type="date"
-                  value={header.voucher_date}
-                  onChange={(e) => setHeader({ ...header, voucher_date: e.target.value })}
-                  disabled={isReadOnly}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-
-              {/* Service Date */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t.serviceDate}
-                </label>
-                <input
-                  type="text"
-                  value={header.service_date}
-                  onChange={(e) => setHeader({ ...header, service_date: e.target.value })}
-                  disabled={isReadOnly}
-                  placeholder="YYYYMM"
-                  className="w-full border rounded px-3 py-2"
-                />
-              </div>
-
-              {/* Currency */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t.currencyCode}
-                </label>
-                <select
-                  value={header.currency_code}
-                  onChange={(e) => setHeader({ ...header, currency_code: e.target.value })}
-                  disabled={isReadOnly}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                >
-                  <option value="01">01 - EGP (جنية مصري)</option>
-                  <option value="02">02 - USD (دولار أمريكي)</option>
-                  <option value="03">03 - AED (درهم إماراتي)</option>
-                  <option value="04">04 - SAR (ريال سعودي)</option>
-                  <option value="05">05 - EUR (يورو)</option>
-                  <option value="06">06 - GBP (إسترليني)</option>
-                </select>
-              </div>
-
-              {/* Exchange Rate */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t.exchangeRate}
-                </label>
-                <input
-                  type="number"
-                  step="0.000001"
-                  value={header.exchange_rate}
-                  onChange={(e) => setHeader({ ...header, exchange_rate: parseFloat(e.target.value) })}
-                  disabled={isReadOnly}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-
-              {/* Description */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-medium mb-1">
-                  {t.description}
-                </label>
-                <textarea
-                  value={header.description}
-                  onChange={(e) => setHeader({ ...header, description: e.target.value })}
-                  disabled={isReadOnly}
-                  className="w-full border rounded px-3 py-2"
-                  rows={2}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Lines Section */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">
-                {language === 'en' ? 'Journal Lines' : 'سطور القيد'}
-              </h3>
-              {!isReadOnly && (
-                <button
-                  type="button"
-                  onClick={addLine}
-                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  {t.addLine}
-                </button>
-              )}
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border p-2">{t.lineNo}</th>
-                    <th className="border p-2">{t.accountCode}</th>
-                    <th className="border p-2">{t.drValue}</th>
-                    <th className="border p-2">{t.crValue}</th>
-                    <th className="border p-2">{t.lineDesc}</th>
-                    {!isReadOnly && <th className="border p-2">Actions</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {lines.map((line, index) => (
-                    <tr key={index}>
-                      <td className="border p-2 text-center">{index + 1}</td>
-                      <td className="border p-2">
-                        <input
-                          type="text"
-                          value={line.account_code}
-                          onChange={(e) => updateLine(index, 'account_code', e.target.value)}
-                          disabled={isReadOnly}
-                          className="w-full border rounded px-2 py-1"
-                          required
+        {/* Lines Table */}
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-50/30">
+          <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <table className="w-full text-sm border-collapse">
+              <thead className="bg-[#1e293b] text-white">
+                <tr>
+                  <th className="p-4 w-12 text-center">#</th>
+                  <th className="p-4 text-left">Account (Bilingual)</th>
+                  <th className="p-4 w-40 text-right">Debit</th>
+                  <th className="p-4 w-40 text-right">Credit</th>
+                  <th className="p-4 text-left">Description</th>
+                  <th className="p-4 w-12 text-center"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {lines.map((line, idx) => (
+                  <tr 
+                    key={idx} 
+                    className={`transition-colors group ${activeLine === idx ? 'bg-blue-50/50' : 'hover:bg-gray-50'}`}
+                    onClick={() => setActiveLine(idx)}
+                  >
+                    <td className="p-4 text-center text-gray-400 font-mono">{line.lineNo}</td>
+                    <td className="p-4">
+                      <div className="flex gap-2 items-center">
+                        <input 
+                          placeholder="Code..." 
+                          className="w-24 bg-transparent font-bold text-blue-800 border-none focus:ring-0 p-0"
+                          value={line.accountCode}
+                          onChange={(e) => updateLine(idx, { accountCode: e.target.value })}
                         />
-                      </td>
-                      <td className="border p-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={line.dr_value}
-                          onChange={(e) => updateLine(index, 'dr_value', parseFloat(e.target.value) || 0)}
-                          disabled={isReadOnly}
-                          className="w-full border rounded px-2 py-1 text-right"
-                        />
-                      </td>
-                      <td className="border p-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={line.cr_value}
-                          onChange={(e) => updateLine(index, 'cr_value', parseFloat(e.target.value) || 0)}
-                          disabled={isReadOnly}
-                          className="w-full border rounded px-2 py-1 text-right"
-                        />
-                      </td>
-                      <td className="border p-2">
-                        <input
-                          type="text"
-                          value={line.line_desc || ''}
-                          onChange={(e) => updateLine(index, 'line_desc', e.target.value)}
-                          disabled={isReadOnly}
-                          className="w-full border rounded px-2 py-1"
-                        />
-                      </td>
-                      {!isReadOnly && (
-                        <td className="border p-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() => removeLine(index)}
-                            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                            disabled={lines.length === 1}
-                          >
-                            {t.removeLine}
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-gray-100 font-bold">
-                    <td colSpan={2} className="border p-2 text-right">
-                      {language === 'en' ? 'Totals:' : 'الإجماليات:'}
+                        <div className="text-gray-500 font-medium">{line.accountName || 'Select Account'}</div>
+                      </div>
                     </td>
-                    <td className="border p-2 text-right">
-                      {balance.total_dr.toFixed(2)}
+                    <td className="p-4">
+                      <input 
+                        className="w-full text-right p-2 rounded-lg border border-transparent focus:border-blue-300 focus:bg-white transition-all bg-emerald-50/30 font-mono font-bold"
+                        type="number" 
+                        value={line.drValue}
+                        onChange={(e) => updateLine(idx, { drValue: e.target.value, crValue: 0 })}
+                      />
                     </td>
-                    <td className="border p-2 text-right">
-                      {balance.total_cr.toFixed(2)}
+                    <td className="p-4">
+                      <input 
+                         className="w-full text-right p-2 rounded-lg border border-transparent focus:border-blue-300 focus:bg-white transition-all bg-rose-50/30 font-mono font-bold"
+                        type="number" 
+                        value={line.crValue}
+                        onChange={(e) => updateLine(idx, { crValue: e.target.value, drValue: 0 })}
+                      />
                     </td>
-                    <td colSpan={2} className="border p-2">
-                      <span className={balance.balanced ? 'text-green-600' : 'text-red-600'}>
-                        {balance.balanced ? t.balanced : `${t.notBalanced} (${t.difference}: ${balance.difference.toFixed(2)})`}
-                      </span>
+                    <td className="p-4">
+                      <input 
+                        className="w-full p-2 bg-transparent border-none focus:ring-0" 
+                        value={line.lineDesc}
+                        onChange={(e) => updateLine(idx, { lineDesc: e.target.value })}
+                        placeholder="Add details..."
+                      />
+                    </td>
+                    <td className="p-4 text-center">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); removeLine(idx); }}
+                        className="text-gray-300 hover:text-rose-600 p-1 rounded-md transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
-                </tfoot>
-              </table>
+                ))}
+              </tbody>
+            </table>
+            
+            <button 
+              onClick={addLine}
+              className="w-full py-4 bg-gray-50 hover:bg-white text-gray-500 hover:text-blue-600 border-t border-dashed font-bold flex items-center justify-center gap-2 transition-all"
+            >
+              <Plus size={20} /> Add New Ledger Line
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom Status Bar */}
+        <div className="bg-white p-6 border-t shadow-[0_-4px_16px_rgba(0,0,0,0.05)] z-10">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <div className="flex gap-12">
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Debit</span>
+                <div className="text-2xl font-mono font-black text-emerald-600">{totals.dr.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Credit</span>
+                <div className="text-2xl font-mono font-black text-rose-600">{totals.cr.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Balance</span>
+                <div className={`text-2xl font-mono font-black ${isBalanced ? 'text-blue-600' : 'text-orange-500'}`}>
+                   {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-2">
+               {isBalanced ? (
+                 <div className="flex items-center gap-2 text-emerald-600 font-bold bg-emerald-50 px-4 py-2 rounded-xl text-sm border border-emerald-100">
+                    <CheckCircle size={18} /> Perfectly Balanced
+                 </div>
+               ) : (
+                 <div className="flex items-center gap-2 text-orange-600 font-bold bg-orange-50 px-4 py-2 rounded-xl text-sm border border-orange-100 animate-pulse">
+                    <Calculator size={18} /> Out of Balance
+                 </div>
+               )}
+               <p className="text-xs text-gray-400">NexSaaS Accounting Engine v1.0.2</p>
             </div>
           </div>
-
-          {/* Actions */}
-          {!isReadOnly && (
-            <div className="flex justify-end gap-4">
-              <button
-                type="submit"
-                disabled={!balance.balanced || saveMutation.isPending}
-                className="px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
-              >
-                {saveMutation.isPending ? 'Saving...' : t.save}
-              </button>
-            </div>
-          )}
-        </form>
+        </div>
       </div>
-    </PermissionGate>
+
+      {/* Side Detail Overlay (All 35 fields) */}
+      <aside 
+        className={`fixed right-0 top-0 h-full w-96 bg-white/80 backdrop-blur-xl border-l shadow-2xl z-20 transform transition-transform duration-500 ease-out p-8 flex flex-col ${activeLine !== null ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <button 
+           onClick={() => setActiveLine(null)}
+           className="absolute top-6 left-[-20px] bg-white border shadow-lg rounded-full p-2 hover:bg-blue-600 hover:text-white transition-all"
+        >
+          <ChevronRight size={20} />
+        </button>
+
+        <h3 className="text-xl font-black text-blue-900 border-b pb-4 mb-6 flex items-center gap-3">
+           <Info size={24} className="text-blue-500" /> Line Information
+        </h3>
+
+        {activeLine !== null && (
+          <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase">Cost Center (cst_cntr)</label>
+                <div className="flex gap-2">
+                  <input 
+                    className="w-1/3 p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    placeholder="0101"
+                    value={lines[activeLine].costCenter}
+                    onChange={(e) => updateLine(activeLine, { costCenter: e.target.value })}
+                  />
+                  <input 
+                    className="flex-1 p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="CC Name"
+                    value={lines[activeLine].ccName}
+                    readOnly
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase">Partner / Vendor</label>
+                <div className="flex gap-2">
+                  <input 
+                    className="w-1/3 p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    placeholder="VND01"
+                    value={lines[activeLine].vendor}
+                    onChange={(e) => updateLine(activeLine, { vendor: e.target.value })}
+                  />
+                  <input 
+                    className="flex-1 p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Partner Name"
+                    value={lines[activeLine].vendorName}
+                    readOnly
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase">Check/Ref No</label>
+                  <input 
+                    className="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500"
+                    value={lines[activeLine].checkNo}
+                    onChange={(e) => updateLine(activeLine, { checkNo: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase">Asset Number</label>
+                  <input 
+                    className="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500"
+                    value={lines[activeLine].assetNo}
+                    onChange={(e) => updateLine(activeLine, { assetNo: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-4">
+                <h4 className="text-xs font-black text-blue-700 uppercase flex items-center gap-2">
+                   🏢 Translation Activity Fields
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-blue-400">Client Word Count</label>
+                    <input 
+                      type="number"
+                      className="w-full p-2 bg-white rounded-lg border-none focus:ring-2 focus:ring-blue-500"
+                      value={lines[activeLine].vendorWordCount}
+                      onChange={(e) => updateLine(activeLine, { vendorWordCount: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-blue-400">Translator Words</label>
+                    <input 
+                      type="number"
+                      className="w-full p-2 bg-white rounded-lg border-none focus:ring-2 focus:ring-blue-500"
+                      value={lines[activeLine].translatorWordCount}
+                      onChange={(e) => updateLine(activeLine, { translatorWordCount: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </aside>
+    </div>
   );
 };

@@ -100,6 +100,29 @@ export default function LeadsPage() {
                                             <Can module="leads" action="update">
                                                 <button style={styles.iconBtn} title="Edit Lead">✏️</button>
                                             </Can>
+                                            <button 
+                                                onClick={() => {
+                                                    alert("🚀 AI Copilot: Generating follow-up for " + lead.first_name + "...");
+                                                    fetch('/api/ai/claude/email/draft', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json', 'X-API-Key': localStorage.getItem('api_key') },
+                                                        body: JSON.stringify({
+                                                            recipient_name: lead.first_name,
+                                                            company_name: lead.company_name || 'Prospect Co',
+                                                            scenario: 'follow_up',
+                                                            goal: 'book_meeting',
+                                                            key_points: ['Personalized solution', 'Next-gen CRM platform']
+                                                        })
+                                                    }).then(r => r.json()).then(d => {
+                                                        console.log("AI Draft:", d);
+                                                        alert("✨ AI Suggested Subject: " + d.data.professional.subject);
+                                                    });
+                                                }}
+                                                style={{...styles.iconBtn, color: '#3b82f6'}} 
+                                                title="AI Copilot Draft"
+                                            >
+                                                🤖
+                                            </button>
                                             <Can module="leads" action="delete">
                                                 <button style={{...styles.iconBtn, color: '#ef4444'}} title="Delete Lead">🗑️</button>
                                             </Can>

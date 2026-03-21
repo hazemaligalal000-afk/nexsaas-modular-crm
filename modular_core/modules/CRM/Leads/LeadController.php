@@ -5,11 +5,14 @@
  * REST endpoints for lead management.
  *
  * Routes:
- *   GET    /api/v1/crm/leads                 → list()       (authenticated)
- *   POST   /api/v1/crm/leads                 → create()     (authenticated)
- *   POST   /api/v1/crm/leads/capture         → capture()    (public, CSRF-protected)
- *   POST   /api/v1/crm/leads/{id}/convert    → convert()    (authenticated)
- *   POST   /api/v1/crm/leads/import          → import()     (authenticated, triggers Celery)
+ *   GET    /api/v1/crm/leads                 → index()    (authenticated)
+ *   POST   /api/v1/crm/leads                 → create()   (authenticated)
+ *   GET    /api/v1/crm/leads/{id}            → show()     (authenticated)
+ *   PUT    /api/v1/crm/leads/{id}            → update()   (authenticated)
+ *   DELETE /api/v1/crm/leads/{id}            → delete()   (authenticated)
+ *   POST   /api/v1/crm/leads/{id}/convert    → convert()  (authenticated)
+ *   POST   /api/v1/crm/leads/capture         → capture()  (public, CSRF-protected)
+ *   POST   /api/v1/crm/leads/import          → import()   (authenticated, async Celery)
  *
  * Requirements: 7.1, 7.5
  */
@@ -39,12 +42,12 @@ class LeadController extends BaseController
     /**
      * List leads for the current tenant.
      *
-     * Query params: limit (default 50), offset (default 0)
+     * Query params: limit (default 50), offset (default 0), status, source
      *
-     * @param  array $queryParams  Parsed query string parameters
+     * @param  array $queryParams
      * @return Response
      */
-    public function list(array $queryParams = []): Response
+    public function index(array $queryParams = []): Response
     {
         try {
             $limit  = max(1, min(200, (int) ($queryParams['limit']  ?? 50)));
@@ -64,57 +67,81 @@ class LeadController extends BaseController
     /**
      * Create a new lead (authenticated).
      *
-     * @param  array $body       Decoded request body
-     * @param  int   $createdBy  Authenticated user ID
+     * @param  array $body
      * @return Response
      */
-    public function create(array $body, int $createdBy): Response
+    public function create(array $body): Response
     {
         try {
-            $id   = $this->service->capture($body, $createdBy);
+            $id   = $this->service->capture($body, (int) $this->userId);
             $lead = $this->service->findById($id);
             return $this->respond($lead, null, 201);
         } catch (\InvalidArgumentException $e) {
             return $this->respond(null, $e->getMessage(), 422);
+        } catch (\RuntimeException $e) {
+            $code = $e->getCode() === 409 ? 409 : 500;
+            return $this->respond(null, $e->getMessage(), $code);
         } catch (\Throwable $e) {
             return $this->respond(null, $e->getMessage(), 500);
         }
     }
 
     // -------------------------------------------------------------------------
-    // POST /api/v1/crm/leads/capture  (public, no auth, CSRF-protected)
+    // GET /api/v1/crm/leads/{id}
     // -------------------------------------------------------------------------
 
     /**
-     * Public lead capture endpoint — no authentication required.
+     * Show a single lead.
      *
-     * Validates the CSRF token before processing. The session token is read
-     * from $_SESSION['csrf_lead_capture'].
-     *
-     * @param  array $body  Decoded request body (includes csrf_token)
+     * @param  int $id
      * @return Response
      */
-    public function capture(array $body): Response
+    public function show(int $id): Response
     {
-        // CSRF validation
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $submittedToken = (string) ($body['csrf_token'] ?? '');
-        $sessionToken   = (string) ($_SESSION['csrf_lead_capture'] ?? '');
-
-        if (!$this->formBuilder->validateCsrf($submittedToken, $sessionToken)) {
-            return $this->respond(null, 'Invalid or missing CSRF token.', 403);
-        }
-
-        // Invalidate token after use (one-time use)
-        unset($_SESSION['csrf_lead_capture']);
-
         try {
-            $id   = $this->service->capture($body, 0);
             $lead = $this->service->findById($id);
-            return $this->respond($lead, null, 201);
+
+            if ($lead === null) {
+                return $this->respond(null, 'Lead not found.', 404);
+            }
+
+            return $this->respond($lead);
+        } catch (\Throwable $e) {
+            return $this->respond(null, $e->getMessage(), 500);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // PUT /api/v1/crm/leads/{id}
+    // -------------------------------------------------------------------------
+
+    /**
+     * Update a lead.
+     *
+     * @param  int   $id
+     * @param  array $body
+     * @return Response
+     */
+    // -------------------------------------------------------------------------
+    // PUT /api/v1/crm/leads/{id}
+    // -------------------------------------------------------------------------
+
+    /**
+     * Update a lead record (authenticated).
+     *
+     * @param  int   $id    Lead ID
+     * @param  array $body  Decoded request body
+     * @return Response
+     */
+    public function update(int $id, array $body): Response
+    {
+        try {
+            $updated = $this->service->update($id, $body);
+            if (!$updated) {
+                return $this->respond(null, 'Lead not found or no changes applied.', 404);
+            }
+            $lead = $this->service->findById($id);
+            return $this->respond($lead);
         } catch (\InvalidArgumentException $e) {
             return $this->respond(null, $e->getMessage(), 422);
         } catch (\Throwable $e) {
@@ -125,9 +152,52 @@ class LeadController extends BaseController
     // -------------------------------------------------------------------------
     // POST /api/v1/crm/leads/{id}/convert
     // -------------------------------------------------------------------------
+            $updated = $this->service->update($id, $body);
+
+            if (!$updated) {
+                return $this->respond(null, 'Lead not found or no changes made.', 404);
+            }
+
+            $lead = $this->service->findById($id);
+            return $this->respond($lead);
+        } catch (\InvalidArgumentException $e) {
+            return $this->respond(null, $e->getMessage(), 422);
+        } catch (\Throwable $e) {
+            return $this->respond(null, $e->getMessage(), 500);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // DELETE /api/v1/crm/leads/{id}
+    // -------------------------------------------------------------------------
 
     /**
-     * Convert a lead into a Contact, Account, and Deal.
+     * Soft-delete a lead.
+     *
+     * @param  int $id
+     * @return Response
+     */
+    public function delete(int $id): Response
+    {
+        try {
+            $deleted = $this->service->delete($id);
+
+            if (!$deleted) {
+                return $this->respond(null, 'Lead not found.', 404);
+            }
+
+            return $this->respond(['deleted' => true]);
+        } catch (\Throwable $e) {
+            return $this->respond(null, $e->getMessage(), 500);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // POST /api/v1/crm/leads/{id}/convert
+    // -------------------------------------------------------------------------
+
+    /**
+     * Convert a lead into a Contact, Account, and Deal (Requirement 7.5).
      *
      * @param  int $id  Lead ID
      * @return Response
@@ -145,24 +215,60 @@ class LeadController extends BaseController
     }
 
     // -------------------------------------------------------------------------
+    // POST /api/v1/crm/leads/capture  (public, no auth, CSRF-protected)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Public lead capture endpoint — no authentication required (Requirement 7.2).
+     *
+     * Validates the CSRF token before processing.
+     *
+     * @param  array $body  Decoded request body (includes csrf_token)
+     * @return Response
+     */
+    public function capture(array $body): Response
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $submittedToken = (string) ($body['csrf_token'] ?? '');
+        $sessionToken   = (string) ($_SESSION['csrf_lead_capture'] ?? '');
+
+        if (!$this->formBuilder->validateCsrf($submittedToken, $sessionToken)) {
+            return $this->respond(null, 'Invalid or missing CSRF token.', 403);
+        }
+
+        unset($_SESSION['csrf_lead_capture']);
+
+        try {
+            $id   = $this->service->capture($body, 0);
+            $lead = $this->service->findById($id);
+            return $this->respond($lead, null, 201);
+        } catch (\InvalidArgumentException $e) {
+            return $this->respond(null, $e->getMessage(), 422);
+        } catch (\Throwable $e) {
+            return $this->respond(null, $e->getMessage(), 500);
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // POST /api/v1/crm/leads/import
     // -------------------------------------------------------------------------
 
     /**
-     * Trigger a Celery lead import job.
+     * Trigger an async Celery lead import job (Requirement 7.4).
      *
-     * Expects multipart/form-data with:
+     * Expects multipart/form-data or JSON with:
      *   - file_path     (string) path to uploaded CSV on shared storage
      *   - field_mapping (JSON)   mapping of CSV columns to lead fields
      *
-     * Dispatches the 'crm.lead_import' Celery task via RabbitMQ and returns
-     * a job reference immediately (async).
+     * Returns 202 Accepted with a job_id for status polling.
      *
-     * @param  array $body      Decoded request body
-     * @param  int   $userId    Authenticated user ID
+     * @param  array $body
      * @return Response
      */
-    public function import(array $body, int $userId): Response
+    public function import(array $body): Response
     {
         $filePath = isset($body['file_path']) ? trim((string) $body['file_path']) : '';
 
@@ -177,7 +283,6 @@ class LeadController extends BaseController
                 : json_decode((string) $body['field_mapping'], true) ?? [];
         }
 
-        // Dispatch Celery task via RabbitMQ (operations > 200ms dispatched async)
         $jobId   = bin2hex(random_bytes(16));
         $payload = [
             'job_id'        => $jobId,
@@ -185,21 +290,19 @@ class LeadController extends BaseController
             'tenant_id'     => $this->tenantId,
             'company_code'  => $this->companyCode,
             'field_mapping' => $fieldMapping,
-            'requested_by'  => $userId,
+            'requested_by'  => (int) $this->userId,
         ];
 
         try {
-            // Publish to Celery default exchange with task routing key
-            // The Celery worker picks this up as 'crm.lead_import'
             $this->service->dispatchImportJob($payload);
         } catch (\Throwable $e) {
             return $this->respond(null, 'Failed to dispatch import job: ' . $e->getMessage(), 500);
         }
 
         return $this->respond([
-            'job_id' => $jobId,
-            'status' => 'queued',
-            'message' => 'Lead import job queued. Check job status for results.',
+            'job_id'   => $jobId,
+            'status'   => 'queued',
+            'message'  => 'Lead import job queued. Check job status for results.',
         ], null, 202);
     }
 }

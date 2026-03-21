@@ -1,0 +1,80 @@
+{
+  "contacts": {
+    "title": "Contacts",
+    "create": "Create Contact",
+    "edit": "Edit Contact",
+    "delete": "Delete Contact",
+    "merge": "Merge Contacts",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "company": "Company",
+    "position": "Position",
+    "status": "Status",
+    "source": "Source",
+    "owner": "Owner",
+    "tags": "Tags",
+    "notes": "Notes",
+    "activities": "Activities",
+    "deals": "Deals",
+    "timeline": "Timeline"
+  },
+  "leads": {
+    "title": "Leads",
+    "create": "Create Lead",
+    "convert": "Convert to Contact",
+    "score": "Lead Score",
+    "status": "Status",
+    "source": "Source",
+    "capture": "Capture Lead",
+    "import": "Import Leads"
+  },
+  "deals": {
+    "title": "Deals",
+    "create": "Create Deal",
+    "value": "Deal Value",
+    "stage": "Stage",
+    "probability": "Win Probability",
+    "closeDate": "Expected Close Date",
+    "pipeline": "Pipeline",
+    "forecast": "Forecast",
+    "won": "Won",
+    "lost": "Lost",
+    "stale": "Stale",
+    "overdue": "Overdue"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "create": "Create Account",
+    "hierarchy": "Account Hierarchy",
+    "revenue": "Annual Revenue",
+    "employees": "Employees",
+    "industry": "Industry",
+    "website": "Website"
+  },
+  "inbox": {
+    "title": "Inbox",
+    "conversations": "Conversations",
+    "messages": "Messages",
+    "reply": "Reply",
+    "assign": "Assign",
+    "resolve": "Resolve",
+    "reopen": "Reopen",
+    "channels": {
+      "email": "Email",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "chat": "Live Chat",
+      "voip": "Phone Call"
+    }
+  },
+  "workflows": {
+    "title": "Workflows",
+    "create": "Create Workflow",
+    "trigger": "Trigger",
+    "actions": "Actions",
+    "enable": "Enable",
+    "disable": "Disable",
+    "clone": "Clone"
+  }
+}

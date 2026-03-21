@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
+         bootstrap="modular_core/tests/bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache">
+         
+    <testsuites>
+        <testsuite name="Master Build Test Suite">
+            <directory>modular_core/tests</directory>
+            <directory>api/tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">modular_core/core</directory>
+            <directory suffix=".php">modular_core/modules</directory>
+            <directory suffix=".php">api/controllers</directory>
+        </include>
+        <exclude>
+            <directory>modular_core/vendor</directory>
+            <directory>api/vendor</directory>
+        </exclude>
+    </source>
+
+    <coverage pathCoverage="true">
+        <report>
+            <html outputDirectory="build/coverage-html"/>
+            <text outputFile="php://stdout" showUncoveredFiles="true"/>
+            <clover outputFile="build/logs/clover.xml"/>
+        </report>
+    </coverage>
+
+    <!-- Enforce 80% Coverage Requirement -->
+    <extensions>
+        <bootstrap class="Tests\CoverageEnforcer">
+            <parameter name="minimumThreshold" value="80"/>
+        </bootstrap>
+    </extensions>
+</phpunit>

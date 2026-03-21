@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './core/AuthContext';
 import LoginPage from './modules/Auth/LoginPage';
+import CommandPalette from './core/CommandPalette';
 
 // Dashboards
 import OwnerDashboard from './modules/Dashboards/OwnerDashboard';
@@ -134,21 +135,9 @@ const ROLE_BADGE = {
 };
 
 // ── Inline pages ───────────────────────────────────────────────────────────
-const MessagingInbox = () => (
-  <div style={styles.page}>
-    <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>Omnichannel Inbox</h1>
-    <p style={{ color: '#64748b' }}>Unified inbox for WhatsApp, SMS, Email, Live Chat, and VoIP.</p>
-    <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
-      {[['📧','Email','12 unread'],['💬','Live Chat','3 active'],['📱','WhatsApp','7 unread'],['📞','VoIP','0 active'],['📩','SMS','2 unread']].map(([icon,ch,stat]) => (
-        <div key={ch} style={{ background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>{icon}</div>
-          <div style={{ fontWeight: '700', color: '#0f172a' }}>{ch}</div>
-          <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>{stat}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+import OmnichannelInbox from './modules/Omnichannel/OmnichannelInbox';
+
+const MessagingInbox = () => <OmnichannelInbox />;
 
 const AICenter = () => (
   <div style={styles.page}>
@@ -306,6 +295,9 @@ function Layout({ children }) {
   );
 }
 
+import LandingPage from './modules/Marketing/LandingPage';
+import OnboardingWizard from './modules/Onboarding/OnboardingWizard';
+
 // ── Smart layout picker ────────────────────────────────────────────────────
 function AppLayout({ children }) {
   const { user } = useAuth();
@@ -313,12 +305,25 @@ function AppLayout({ children }) {
   return <Layout>{children}</Layout>;
 }
 
+import { I18nProvider } from './i18n';
+
+// ── Shared Page Wrapper ────────────────────────────────────────────────────
+const PageContainer = ({ children }) => (
+  <div style={{ padding: '24px', background: '#0f172a', minHeight: '100%' }}>
+    {children}
+  </div>
+);
+
 // ── Routes ─────────────────────────────────────────────────────────────────
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <I18nProvider>
+      <AuthProvider>
+        <Router>
+          <CommandPalette />
         <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/onboarding" element={<OnboardingWizard />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><RoleDashboard /></AppLayout></ProtectedRoute>} />
           <Route path="/leads"     element={<ProtectedRoute><AppLayout><LeadsPage /></AppLayout></ProtectedRoute>} />
@@ -330,10 +335,10 @@ export default function App() {
           <Route path="/partners"  element={<ProtectedRoute><AppLayout><PartnersModule /></AppLayout></ProtectedRoute>} />
           <Route path="/ai"        element={<ProtectedRoute><AppLayout><AICenter /></AppLayout></ProtectedRoute>} />
           <Route path="/settings"  element={<ProtectedRoute><AppLayout><AdminSettings /></AppLayout></ProtectedRoute>} />
-          <Route path="/"          element={<Navigate to="/dashboard" />} />
         </Routes>
       </Router>
     </AuthProvider>
+    </I18nProvider>
   );
 }
 

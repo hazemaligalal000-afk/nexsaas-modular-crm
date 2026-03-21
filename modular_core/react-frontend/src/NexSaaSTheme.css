@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%; /* Deep Navy */
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%; /* Slightly lighter Navy */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%; /* Electric Blue */
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 91% 60%; /* Electric Blue */
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%; /* Electric Blue Ring */
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(217,100%,15%,1) 0, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(222,100%,10%,1) 0, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+/* NexSaaS Premium Glassmorphism */
+.glass-panel {
+  @apply bg-slate-900/40 backdrop-blur-3xl border border-white/10 shadow-2xl;
+}
+
+.glass-pill {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-4 py-1 text-xs font-bold text-white;
+}
+
+.electric-glow {
+  @apply shadow-[0_0_20px_rgba(59,130,246,0.3)];
+}
+
+/* Animations (Requirement 6.146) */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

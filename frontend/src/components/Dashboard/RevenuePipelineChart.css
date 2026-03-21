@@ -1,0 +1,121 @@
+/**
+ * Revenue Pipeline Chart Styles
+ * Requirements: 15 - Interactive Charts with Recharts
+ * 
+ * Responsive, RTL-aware, dark mode compatible styles
+ */
+
+.revenue-pipeline-chart {
+  background: var(--card-background, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding-block: 1.5rem;
+  padding-inline: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.revenue-pipeline-chart:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.revenue-pipeline-chart .chart-title {
+  margin-block-start: 0;
+  margin-block-end: 1rem;
+  margin-inline: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+/* Tooltip Styles */
+.revenue-pipeline-tooltip {
+  background: var(--tooltip-background, rgba(17, 24, 39, 0.95));
+  border: 1px solid var(--tooltip-border, rgba(255, 255, 255, 0.1));
+  border-radius: 6px;
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.revenue-pipeline-tooltip .tooltip-date {
+  margin-block: 0 0.5rem;
+  margin-inline: 0;
+  font-size: 0.875rem;
+  color: var(--tooltip-text-secondary, #9ca3af);
+}
+
+.revenue-pipeline-tooltip .tooltip-value {
+  margin-block: 0;
+  margin-inline: 0;
+  font-size: 0.875rem;
+  color: var(--tooltip-text-primary, #f9fafb);
+}
+
+.revenue-pipeline-tooltip .tooltip-value strong {
+  font-weight: 600;
+  color: var(--primary-color, #3b82f6);
+}
+
+/* Chart Grid Customization */
+.revenue-pipeline-chart .chart-grid {
+  stroke: var(--grid-color, #e5e7eb);
+  opacity: 0.5;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .revenue-pipeline-chart {
+    --card-background: #1f2937;
+    --border-color: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --grid-color: #374151;
+    --tooltip-background: rgba(31, 41, 55, 0.95);
+    --tooltip-border: rgba(255, 255, 255, 0.1);
+    --tooltip-text-primary: #f9fafb;
+    --tooltip-text-secondary: #9ca3af;
+  }
+}
+
+/* Explicit dark mode class support */
+.dark .revenue-pipeline-chart {
+  --card-background: #1f2937;
+  --border-color: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --grid-color: #374151;
+  --tooltip-background: rgba(31, 41, 55, 0.95);
+  --tooltip-border: rgba(255, 255, 255, 0.1);
+  --tooltip-text-primary: #f9fafb;
+  --tooltip-text-secondary: #9ca3af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .revenue-pipeline-chart {
+    padding-block: 1rem;
+    padding-inline: 1rem;
+  }
+
+  .revenue-pipeline-chart .chart-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .revenue-pipeline-chart {
+    padding-block: 0.75rem;
+    padding-inline: 0.75rem;
+  }
+
+  .revenue-pipeline-tooltip {
+    padding-block: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+
+  .revenue-pipeline-tooltip .tooltip-date,
+  .revenue-pipeline-tooltip .tooltip-value {
+    font-size: 0.8125rem;
+  }
+}

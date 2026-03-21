@@ -1,0 +1,46 @@
+{
+  "inventory": {
+    "title": "Inventory",
+    "items": "Items",
+    "warehouses": "Warehouses",
+    "stockMovement": "Stock Movement",
+    "stockTake": "Stock Take",
+    "reorderLevel": "Reorder Level",
+    "valuation": "Valuation Method",
+    "fifo": "FIFO",
+    "lifo": "LIFO",
+    "weightedAverage": "Weighted Average"
+  },
+  "procurement": {
+    "title": "Procurement",
+    "purchaseRequisition": "Purchase Requisition",
+    "purchaseOrder": "Purchase Order",
+    "rfq": "Request for Quotation",
+    "goodsReceipt": "Goods Receipt",
+    "supplier": "Supplier"
+  },
+  "hr": {
+    "title": "Human Resources",
+    "employees": "Employees",
+    "departments": "Departments",
+    "leave": "Leave Management",
+    "onboarding": "Onboarding",
+    "offboarding": "Offboarding",
+    "orgChart": "Organization Chart"
+  },
+  "projects": {
+    "title": "Projects",
+    "tasks": "Tasks",
+    "milestones": "Milestones",
+    "timeTracking": "Time Tracking",
+    "gantt": "Gantt Chart",
+    "completion": "Completion %"
+  },
+  "manufacturing": {
+    "title": "Manufacturing",
+    "bom": "Bill of Materials",
+    "workOrder": "Work Order",
+    "production": "Production",
+    "components": "Components"
+  }
+}

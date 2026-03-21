@@ -117,12 +117,16 @@ class SubscriptionService extends BaseService
                 return ['success' => false, 'error' => 'Customer not found'];
             }
             
-            // Create subscription
+            // Create subscription with Seat-based overage and Global Tax
             $subscription = $this->stripe->subscriptions->create([
                 'customer' => $customerId,
                 'items' => [
                     ['price' => $planId, 'quantity' => $seats]
                 ],
+                'automatic_tax' => ['enabled' => true], // Requirement 4.9 Stripe Tax
+                'payment_behavior' => 'default_incomplete',
+                'payment_settings' => ['save_default_payment_method' => 'on_subscription'],
+                'expand' => ['latest_invoice.payment_intent'],
                 'metadata' => [
                     'tenant_id' => $tenantId
                 ]
@@ -462,10 +466,15 @@ class SubscriptionService extends BaseService
         $status = $result->fields['subscription_status'];
         $gracePeriodEnd = $result->fields['grace_period_end'];
         $createdAt = $result->fields['created_at'];
-        
         // Requirement 47.1: 14-day free trial (no credit card required)
         $trialPeriodDays = 14;
         $trialEnd = strtotime($createdAt) + ($trialPeriodDays * 86400);
+        
+        // Requirement 28.5 - Trial nearing end status
+        if (time() < $trialEnd && time() > ($trialEnd - 259200) && empty($status)) { // Within 3 days
+            $this->triggerTrialReminder($tenantId);
+        }
+
         if (time() < $trialEnd && empty($status)) {
             return true;
         }
@@ -479,8 +488,13 @@ class SubscriptionService extends BaseService
         if ($status === 'past_due' && $gracePeriodEnd) {
             return strtotime($gracePeriodEnd) > time();
         }
-        
+
         return false;
+    }
+
+    protected function triggerTrialReminder(string $tenantId) {
+        // Emit event for automated email dunning (Phase 10)
+        \Core\AuditLogger::log($tenantId, 'SYSTEM', 'TRIAL_EXPIRING_SOON', 'WARNING', "14-day trial ending in 72h. Subscription expected.", 1);
     }
     
     /**
@@ -503,7 +517,29 @@ class SubscriptionService extends BaseService
         $planSeats = (int)$result->fields['plan_seats'];
         $userCount = (int)$result->fields['user_count'];
         
-        return $userCount >= $planSeats;
+        // Requirement 4.2 - Dynamic Seat Overage
+        // Instead of a hard-block, we allow excess users and charge $15/seat overage
+        if ($userCount > $planSeats) {
+            $this->addSeatOverage($tenantId, $userCount - $planSeats);
+        }
+        
+        return false; // Never block, always charge (SaaS growth model)
+    }
+
+    protected function addSeatOverage(string $tenantId, int $excessSeatsCount) {
+        $customerId = $this->getStripeCustomerId($tenantId);
+        if (!$customerId) return;
+
+        // Add 1-time charge for the overage seat before next invoice
+        \Stripe\InvoiceItem::create([
+            'customer' => $customerId,
+            'amount' => 1500 * $excessSeatsCount, // $15 per extra seat
+            'currency' => 'usd',
+            'description' => "Excess User Seat Overage ({$excessSeatsCount} seats)",
+            'metadata' => ['tenant_id' => $tenantId]
+        ]);
+        
+        AuditLogger::log($tenantId, 'BILLING', 'SEAT_OVERAGE_INJECTED', 'INFO', "Created overage charge for {$excessSeatsCount} additional seats.", 1);
     }
     
     /**

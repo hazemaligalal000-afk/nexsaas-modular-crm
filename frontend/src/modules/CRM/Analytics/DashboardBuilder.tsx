@@ -81,7 +81,7 @@ function AddWidgetModal({ dashboardId, onClose, onAdded }: AddWidgetModalProps) 
     mutationFn: async () => {
       const body: Record<string, unknown> = {
         widget_type: widgetType,
-        title: title.trim() || (WIDGET_TYPES.find((t) => t.value === widgetType)?.label ?? widgetType),
+        title: title.trim() || WIDGET_TYPES.find((t) => t.value === widgetType)?.label ?? widgetType,
       };
       if (widgetType === 'report' && reportId) {
         body.report_id = parseInt(reportId, 10);

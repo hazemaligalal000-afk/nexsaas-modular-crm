@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<ruleset name="NexSaaS PSR-12 Standard">
+    <description>The coding standard for NexSaaS platform, strictly adhering to PSR-12.</description>
+    
+    <!-- Paths to check -->
+    <file>modular_core</file>
+    <file>api</file>
+    <file>include</file>
+
+    <!-- Exclude third party code -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+    <!-- Base ruleset -->
+    <rule ref="PSR12" />
+
+    <!-- Treat warnings as errors for Strict Pipeline -->
+    <config name="ignore_warnings_on_exit" value="0"/>
+    
+    <!-- Require strict types -->
+    <rule ref="Generic.PHP.RequireStrictTypes" />
+</ruleset>

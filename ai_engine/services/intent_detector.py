@@ -14,7 +14,12 @@ class IntentDetector:
         # 1. Construct Prompt for Claude
         system_prompt = (
             "You are an expert CRM analyst. Analyze the following message and conversation history "
-            "to detect primary intent. Choose ONLY one from: buying_intent, churn_risk, support_request, neutral. "
+            "to detect primary intent. Choose ONLY one from: buying_intent, churn_risk, support_request, neutral.\n\n"
+            "Examples:\n"
+            "1. 'What is the price for 50 users? Can we get a discount?' -> buying_intent\n"
+            "2. 'This is the third time the sync failed. I am moving back to Salesforce.' -> churn_risk\n"
+            "3. 'How do I reset my password?' -> support_request\n"
+            "4. 'Thanks for the update.' -> neutral\n\n"
             "Provide a confidence score (0.0 to 1.0) and brief reasoning. Respond ONLY in valid JSON format."
         )
 

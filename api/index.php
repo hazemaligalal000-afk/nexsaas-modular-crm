@@ -11,6 +11,13 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-API-Key");
 header("Access-Control-Max-Age: 86400");
 
+// Security Headers (Requirement 10.172)
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://localhost:8000; frame-ancestors 'none';");
+header("X-Content-Type-Options: nosniff");
+header("X-Frame-Options: DENY");
+header("X-XSS-Protection: 1; mode=block");
+header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
+
 // Production mode: only report errors to prevent JSON pollution
 error_reporting(E_ERROR | E_PARSE | E_COMPILE_ERROR);
 ini_set('display_errors', 'Off');
@@ -95,6 +102,10 @@ switch ($resource) {
         require_once 'controllers/AnalyticsController.php';
         $controller = new AnalyticsController($adb);
         break;
+    case 'ai':
+        require_once 'controllers/AIProxyController.php';
+        $controller = new AIProxyController($adb);
+        break;
     default:
         // Generic Module Handler for "Everything Vtiger"
         // Convert plural to singular if needed (e.g. accounts -> Accounts)
@@ -119,7 +130,11 @@ switch ($resource) {
 // Dispatch
 if ($method == 'GET') {
     if ($id) {
-        $controller->show($id);
+        if ($resource === 'leads' && isset($route_parts[2]) && $route_parts[2] === 'score') {
+            $controller->score($id);
+        } else {
+            $controller->show($id);
+        }
     } else {
         $controller->index();
     }

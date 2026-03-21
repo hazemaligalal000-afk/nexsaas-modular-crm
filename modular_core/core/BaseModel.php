@@ -209,7 +209,26 @@ abstract class BaseModel
             );
         }
 
-        return (int) $this->db->Insert_ID();
+        $id = (int) $this->db->Insert_ID();
+        
+        // Advanced: System-wide event broadcast (Batch J)
+        $this->fireEvent($this->table . '.created', array_merge(['id' => $id], $data));
+
+        return $id;
+    }
+
+    /**
+     * Broadcast an event to the global EventBus
+     */
+    protected function fireEvent(string $name, array $payload): void
+    {
+        if (class_exists('Core\EventBus')) {
+            $bus = new EventBus($this->db);
+            $bus->fire($name, array_merge($payload, [
+                'tenant_id' => $this->tenantId,
+                'company_code' => $this->companyCode
+            ]));
+        }
     }
 
     /**

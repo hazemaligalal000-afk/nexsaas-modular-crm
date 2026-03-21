@@ -2,91 +2,70 @@
 
 namespace ModularCore\Modules\Platform\Onboarding;
 
-use App\Models\Tenant;
-use App\Models\User;
+use Core\Database;
 use ModularCore\Modules\Platform\Billing\StripeService;
 use Exception;
-use Illuminate\Support\Str;
 
 /**
  * Tenant Provisioning Service (Phase 2 Task 2.1)
  * 
- * Orchestrates the creation of a new client workspace, including:
- * 1. Database Tenant Record
- * 2. Stripe Customer Creation
- * 3. Initial Admin User Setup
- * 4. Default Branding Initialization
+ * Orchestrates the creation of a new client workspace.
  */
 class TenantProvisioningService
 {
     private $stripe;
 
-    public function __construct(StripeService $stripe)
+    public function __construct()
     {
-        $this->stripe = $stripe;
+        // Use the refactored StripeService
+        $this->stripe = new StripeService();
     }
 
     /**
      * Complete Onboarding Flow
      */
-    public function provision(array $data): Tenant
+    public function provision(array $data): array
     {
-        # 1. Create Tenant Record
-        $tenantId = (string) Str::uuid();
-        $tenant = Tenant::create([
-            'id' => $tenantId,
-            'name' => $data['company_name'],
-            'company_code' => $this->generateCompanyCode($data['company_name']),
-            'subscription_status' => 'trialing',
-            'current_tier' => 'starter',
-            'access_locked_at' => null
-        ]);
+        $tenantId = $this->generateUuid();
+        
+        # 1. Create Tenant Record (Core\Database)
+        Database::query(
+            "INSERT INTO tenants (id, name, company_code, subscription_status, current_tier, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
+            [$tenantId, $data['company_name'], '01', 'trialing', 'starter']
+        );
 
         # 2. Create Initial Admin User
-        $user = User::create([
+        $userId = $this->generateUuid();
+        Database::query(
+            "INSERT INTO users (id, tenant_id, name, email, password, role, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())",
+            [$userId, $tenantId, $data['admin_name'], $data['admin_email'], password_hash($data['admin_password'], PASSWORD_BCRYPT), 'admin', 1]
+        );
+
+        # 3. Initialize Default Brand
+        $this->seedDefaultBranding($tenantId, $data['company_name']);
+
+        return [
             'tenant_id' => $tenantId,
-            'name' => $data['admin_name'],
-            'email' => $data['admin_email'],
-            'password' => bcrypt($data['admin_password']),
-            'role' => 'admin',
-            'is_active' => true
-        ]);
-
-        # 3. Create Stripe Customer
-        try {
-            // We'll create the customer in Stripe but defer subscription until the payment step
-            // This allows the user to browse the CRM in 'trial' mode first
-            // $stripeCustomer = Stripe\Customer::create([...]);
-            // $tenant->update(['stripe_customer_id' => $stripeCustomer->id]);
-        } catch (Exception $e) {
-            \Log::error("Stripe Provisioning Failed: " . $e->getMessage());
-        }
-
-        # 4. Initialize Default Brand (Company 01-06 logic)
-        $this->seedDefaultBranding($tenant);
-
-        return $tenant;
+            'admin_user_id' => $userId
+        ];
     }
 
-    /**
-     * Seed first-time brand identity
-     */
-    private function seedDefaultBranding(Tenant $tenant)
+    private function seedDefaultBranding(string $tenantId, string $companyName)
     {
-        \DB::table('email_brand_settings')->insert([
-            'tenant_id' => $tenant->id,
-            'company_code' => '01',
-            'company_name_en' => $tenant->name,
-            'color_primary' => '#1d4ed8',
-            'sender_name_en' => $tenant->name . ' CRM',
-            'sender_email' => 'noreply@' . strtolower(str_replace(' ', '', $tenant->name)) . '.com',
-            'created_at' => now()
-        ]);
+        Database::query(
+            "INSERT INTO email_brand_settings (tenant_id, company_code, company_name_en, color_primary, sender_name_en, sender_email, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+            [$tenantId, '01', $companyName, '#1d4ed8', $companyName . ' CRM', 'noreply@example.com']
+        );
     }
 
-    private function generateCompanyCode(string $name)
+    private function generateUuid()
     {
-        # Simple logic for now, in production use a sequence or lookup
-        return '01'; 
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
     }
 }

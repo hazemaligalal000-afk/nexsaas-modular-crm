@@ -60,6 +60,7 @@ class LeadScoreResponse(BaseModel):
     score: int = Field(..., ge=0, le=100)
     confidence: float = Field(..., ge=0, le=1)
     factors: List[ScoringFactor]
+    recommendation: Optional[str] = None
     model_version: str = "lead-scorer-v1"
 
 # --- Intent Detection Models ---
@@ -73,9 +74,6 @@ class IntentDetectionResponse(BaseModel):
     confidence: float = Field(..., ge=0, le=1)
     reasoning: str
     model_version: str = "intent-detector-v1"
-
-class Any:
-    pass
 
 # --- AI Content Models ---
 class ContentGenerationRequest(BaseModel):

@@ -13,8 +13,8 @@ class StripeService
 
     public function __construct()
     {
-        $this->stripe = new StripeClient(config('stripe.secret_key'));
-        $this->webhookSecret = config('stripe.webhook_secret');
+        $this->stripe = new StripeClient(getenv('STRIPE_SECRET_KEY') ?: 'sk_test_placeholder');
+        $this->webhookSecret = getenv('STRIPE_WEBHOOK_SECRET') ?: 'whsec_placeholder';
     }
 
     /**

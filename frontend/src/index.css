@@ -1,6 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Import logical properties and RTL support */
+@import './styles/logical-properties.css';
+@import './styles/rtl.css';
  
 @layer base {
   :root {

@@ -1,0 +1,43 @@
+/**
+ * KPI Grid Styles
+ * Requirements: 14 - Modern Dashboard with KPIs
+ * 
+ * Responsive grid with RTL support using CSS logical properties
+ * 4 columns (desktop ≥1024px), 2 columns (tablet 768-1023px), 1 column (mobile <768px)
+ */
+
+.kpi-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-block-end: 2rem;
+}
+
+/* Desktop: 4 columns */
+@media (min-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 767px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* RTL support - grid automatically handles direction with logical properties */
+/* No additional RTL-specific styles needed due to CSS Grid's built-in support */
+
+/* Ensure smooth transitions when resizing */
+.kpi-grid > * {
+  min-width: 0; /* Prevent grid blowout */
+}

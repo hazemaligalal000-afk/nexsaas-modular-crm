@@ -1,0 +1,172 @@
+/**
+ * Dashboard Page Styles
+ * Requirements: 14, 18 - Modern Dashboard with Mobile Responsive Design
+ * Uses CSS logical properties for RTL support
+ */
+
+.dashboard {
+  padding: 2rem;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-block-end: 2rem;
+}
+
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color, #111827);
+  margin: 0;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* KPI Grid - 4 columns on desktop, 2 on tablet, 1 on mobile */
+.kpi-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Charts Grid - 2 columns on desktop, 1 on mobile */
+.charts-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Placeholder styles (temporary for Task 6.1) */
+.kpi-placeholder,
+.chart-placeholder {
+  padding: 2rem;
+  background-color: var(--surface-color, #ffffff);
+  border: 2px dashed var(--border-color, #e5e7eb);
+  border-radius: 0.5rem;
+  text-align: center;
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.875rem;
+}
+
+/* Tablet breakpoint (768px - 1023px) */
+@media (max-width: 1023px) {
+  .dashboard {
+    padding: 1.5rem;
+  }
+  
+  .dashboard-title {
+    font-size: 1.75rem;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile breakpoint (< 768px) */
+@media (max-width: 767px) {
+  .dashboard {
+    padding: 1rem;
+  }
+  
+  .dashboard-header {
+    gap: 1rem;
+  }
+  
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .charts-grid {
+    gap: 1rem;
+  }
+  
+  .dashboard-content {
+    gap: 1.5rem;
+  }
+}
+
+/* Desktop large breakpoint (>= 1920px) */
+@media (min-width: 1920px) {
+  .dashboard {
+    padding: 3rem;
+  }
+  
+  .dashboard-title {
+    font-size: 2.25rem;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .dashboard-title {
+  color: var(--text-dark, #e5e5e5);
+}
+
+[data-theme="dark"] .kpi-placeholder,
+[data-theme="dark"] .chart-placeholder {
+  background-color: var(--surface-dark, #2d2d2d);
+  border-color: var(--border-dark, #404040);
+  color: var(--text-dark-secondary, #9ca3af);
+}
+
+/* Print styles */
+@media print {
+  .dashboard {
+    padding: 0;
+  }
+  
+  .dashboard-header {
+    page-break-after: avoid;
+  }
+  
+  .kpi-grid,
+  .charts-grid {
+    page-break-inside: avoid;
+  }
+}
+
+/* Accessibility - Focus visible */
+.dashboard:focus-visible {
+  outline: 2px solid var(--primary-color, #3b82f6);
+  outline-offset: 4px;
+}
+
+/* Loading state transition */
+.dashboard-content {
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-content {
+    animation: none;
+  }
+}

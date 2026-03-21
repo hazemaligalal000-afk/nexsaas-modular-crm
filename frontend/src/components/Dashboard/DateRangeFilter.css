@@ -1,0 +1,176 @@
+/**
+ * Date Range Filter Styles
+ * Requirements: 14 - Modern Dashboard with KPIs
+ * Uses CSS logical properties for RTL support
+ */
+
+.date-range-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.preset-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.375rem;
+  background-color: var(--surface-color, #ffffff);
+  color: var(--text-color, #374151);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.preset-button:hover {
+  background-color: var(--hover-bg, #f3f4f6);
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.preset-button.active {
+  background-color: var(--primary-color, #3b82f6);
+  color: white;
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.preset-button:focus {
+  outline: 2px solid var(--primary-color, #3b82f6);
+  outline-offset: 2px;
+}
+
+.custom-date-picker {
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.5rem;
+  background-color: var(--surface-color, #ffffff);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.date-inputs {
+  display: flex;
+  gap: 1rem;
+  margin-block-end: 1rem;
+}
+
+.date-input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.date-input-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary, #6b7280);
+}
+
+.date-input-group input[type="date"] {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--text-color, #374151);
+  background-color: var(--input-bg, #ffffff);
+}
+
+.date-input-group input[type="date"]:focus {
+  outline: 2px solid var(--primary-color, #3b82f6);
+  outline-offset: 0;
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.custom-picker-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.apply-button,
+.cancel-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.apply-button {
+  background-color: var(--primary-color, #3b82f6);
+  color: white;
+  border: none;
+}
+
+.apply-button:hover:not(:disabled) {
+  background-color: var(--primary-hover, #2563eb);
+}
+
+.apply-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  background-color: transparent;
+  color: var(--text-color, #374151);
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.cancel-button:hover {
+  background-color: var(--hover-bg, #f3f4f6);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .preset-buttons {
+    flex-direction: column;
+  }
+  
+  .preset-button {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .date-inputs {
+    flex-direction: column;
+  }
+  
+  .custom-picker-actions {
+    flex-direction: column;
+  }
+  
+  .apply-button,
+  .cancel-button {
+    width: 100%;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .preset-button {
+  background-color: var(--surface-dark, #2d2d2d);
+  color: var(--text-dark, #e5e5e5);
+  border-color: var(--border-dark, #404040);
+}
+
+[data-theme="dark"] .preset-button:hover {
+  background-color: var(--hover-dark, #3d3d3d);
+}
+
+[data-theme="dark"] .custom-date-picker {
+  background-color: var(--surface-dark, #2d2d2d);
+  border-color: var(--border-dark, #404040);
+}
+
+[data-theme="dark"] .date-input-group input[type="date"] {
+  background-color: var(--input-dark, #1a1a1a);
+  color: var(--text-dark, #e5e5e5);
+  border-color: var(--border-dark, #404040);
+}

@@ -2,75 +2,77 @@
 
 namespace ModularCore\Modules\Platform\Onboarding;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Core\BaseController;
+use Core\Database;
 use ModularCore\Modules\Platform\Onboarding\TenantProvisioningService;
 use Exception;
 
-class OnboardingController extends Controller
+class OnboardingController extends BaseController
 {
     private $provisioner;
 
-    public function __construct(TenantProvisioningService $provisioner)
+    public function __construct()
     {
-        $this->provisioner = $provisioner;
+        // In a real DI system we'd inject this, but for this custom core we'll instantiate
+        $this->provisioner = new TenantProvisioningService();
     }
 
     /**
-     * POST /api/v1/onboarding/register
-     * Response: {"success": true, "tenant_id": "...", "auth_token": "..."}
+     * POST /register
+     * Response standard: API_Response envelope (via respond method)
      */
-    public function register(Request $request)
+    public function register()
     {
-        $request->validate([
-            'company_name'   => 'required|unique:tenants,name',
-            'admin_name'     => 'required|max:200',
-            'admin_email'    => 'required|email|unique:users,email',
-            'admin_password' => 'required|min:8'
-        ]);
+        $input = json_decode(file_get_contents("php://input"), true);
+        
+        # 1. Basic Validation (Requirement 2.5: Descriptive error)
+        if (empty($input['company_name'])) return $this->respond(null, "Company name is required", 400);
+        if (empty($input['admin_email'])) return $this->respond(null, "Admin email is required", 400);
+        if (empty($input['admin_password'])) return $this->respond(null, "Password is required", 400);
 
         try {
-            # 1. Start Multi-Tenant Provisioning
-            $tenant = $this->provisioner->provision($request->all());
+            # 2. Start Multi-Tenant Provisioning
+            $tenantData = $this->provisioner->provision($input);
 
-            # 2. Map Admin and Generate JWT for immediate access
-            $admin = $tenant->users()->where('role', 'admin')->first();
-            $token = $this->generateInitialToken($admin);
+            # 3. Generate JWT for immediate access
+            $token = $this->generateInitialToken($tenantData['admin_user_id']);
 
-            return response()->json([
-                'success' => true,
-                'tenant_id' => $tenant->id,
-                'tenant_name' => $tenant->name,
+            return $this->respond([
+                'tenant_id' => $tenantData['tenant_id'],
+                'tenant_name' => $input['company_name'],
                 'token' => $token,
                 'onboarding_next_step' => 'branding_setup'
             ]);
 
         } catch (Exception $e) {
-            \Log::error("Onboarding Registration Failed: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'error' => "Registration failed. Please try again later."
-            ], 500);
+            return $this->respond(null, "Registration failed: " . $e->getMessage(), 500);
         }
     }
 
     /**
-     * POST /api/v1/onboarding/branding
+     * POST /branding
      */
-    public function updateInitialBranding(Request $request)
+    public function updateInitialBranding()
     {
-        $request->validate(['primary_color' => 'required|hex_color']);
+        $input = json_decode(file_get_contents("php://input"), true);
+        $primaryColor = $input['primary_color'] ?? '#1d4ed8';
         
-        $tenant = $request->user()->tenant;
-        \DB::table('email_brand_settings')
-            ->where('tenant_id', $tenant->id)
-            ->where('company_code', '01')
-            ->update(['color_primary' => $request->primary_color]);
+        if (!preg_match('/^#[a-f0-9]{6}$/i', $primaryColor)) {
+            return $this->respond(null, "Invalid HEX color format", 400);
+        }
 
-        return response()->json(['success' => true]);
+        try {
+            Database::query(
+                "UPDATE email_brand_settings SET color_primary = ? WHERE tenant_id = ? AND company_code = '01'",
+                [$primaryColor, $this->tenantId]
+            );
+            return $this->respond(['success' => true]);
+        } catch (Exception $e) {
+            return $this->respond(null, "Branding update failed", 500);
+        }
     }
 
-    private function generateInitialToken($user)
+    private function generateInitialToken($userId)
     {
         // Integration with existing Auth/JWT system
         return "onboarding_jwt_token_sample_" . bin2hex(random_bytes(16));

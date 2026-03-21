@@ -1,0 +1,34 @@
+/**
+ * Landing Page Styles
+ * Main container for the public-facing website
+ */
+
+.landing-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--color-background, #ffffff);
+}
+
+/* Ensure smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Container utility */
+.container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-inline: 3rem;
+  }
+}

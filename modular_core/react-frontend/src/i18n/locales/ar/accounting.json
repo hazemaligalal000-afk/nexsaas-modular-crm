@@ -1,0 +1,111 @@
+{
+  "coa": {
+    "title": "دليل الحسابات",
+    "create": "إنشاء حساب",
+    "accountCode": "رمز الحساب",
+    "accountName": "اسم الحساب",
+    "accountType": "نوع الحساب",
+    "balance": "الرصيد",
+    "blocked": "محظور",
+    "hierarchy": "التسلسل الهرمي للحساب"
+  },
+  "vouchers": {
+    "title": "القيود",
+    "create": "إنشاء قيد",
+    "voucherCode": "رمز القيد",
+    "sectionCode": "رمز القسم",
+    "finPeriod": "الفترة المالية",
+    "date": "التاريخ",
+    "description": "الوصف",
+    "debit": "مدين",
+    "credit": "دائن",
+    "status": "الحالة",
+    "draft": "مسودة",
+    "submitted": "مقدم",
+    "approved": "معتمد",
+    "posted": "مرحل",
+    "reversed": "معكوس",
+    "approve": "اعتماد",
+    "post": "ترحيل",
+    "reverse": "عكس",
+    "copy": "نسخ القيد"
+  },
+  "fx": {
+    "title": "الصرف الأجنبي",
+    "exchangeRate": "سعر الصرف",
+    "currency": "العملة",
+    "realizedGain": "مكاسب محققة",
+    "realizedLoss": "خسائر محققة",
+    "unrealizedGain": "مكاسب غير محققة",
+    "unrealizedLoss": "خسائر غير محققة",
+    "revaluation": "إعادة تقييم العملات"
+  },
+  "ar": {
+    "title": "الذمم المدينة",
+    "invoice": "فاتورة",
+    "payment": "دفعة",
+    "aging": "تقرير الأعمار",
+    "overdue": "متأخر"
+  },
+  "ap": {
+    "title": "الذمم الدائنة",
+    "bill": "فاتورة مورد",
+    "payment": "دفعة",
+    "aging": "تقرير الأعمار",
+    "withholdingTax": "ضريبة الخصم"
+  },
+  "bank": {
+    "title": "البنوك والنقدية",
+    "bankAccount": "حساب بنكي",
+    "pettyCash": "صندوق نثرية",
+    "cashCall": "طلب نقدية",
+    "reconciliation": "تسوية بنكية",
+    "statement": "كشف حساب بنكي",
+    "cashPosition": "الوضع النقدي"
+  },
+  "assets": {
+    "title": "الأصول الثابتة",
+    "assetRegister": "سجل الأصول",
+    "depreciation": "الإهلاك",
+    "disposal": "التخلص من الأصول",
+    "revaluation": "إعادة تقييم الأصول",
+    "netBookValue": "صافي القيمة الدفترية"
+  },
+  "payroll": {
+    "title": "الرواتب",
+    "payrollRun": "تشغيل الرواتب",
+    "payslip": "قسيمة راتب",
+    "grossPay": "الراتب الإجمالي",
+    "deductions": "الخصومات",
+    "netPay": "صافي الراتب",
+    "socialInsurance": "التأمينات الاجتماعية"
+  },
+  "partners": {
+    "title": "الشركاء",
+    "distribution": "توزيع الأرباح",
+    "withdrawal": "سحب",
+    "dues": "مستحقات الشركاء",
+    "capital": "رأس المال"
+  },
+  "reports": {
+    "title": "التقارير المالية",
+    "trialBalance": "ميزان المراجعة",
+    "profitLoss": "قائمة الدخل",
+    "balanceSheet": "الميزانية العمومية",
+    "cashFlow": "قائمة التدفقات النقدية",
+    "consolidated": "القوائم الموحدة"
+  },
+  "period": {
+    "title": "الفترة المالية",
+    "open": "فتح الفترة",
+    "close": "إغلاق الفترة",
+    "lock": "قفل الفترة",
+    "current": "الفترة الحالية"
+  },
+  "company": {
+    "title": "الشركة",
+    "companyCode": "رمز الشركة",
+    "switchCompany": "تبديل الشركة",
+    "multiCompany": "متعدد الشركات"
+  }
+}

@@ -40,6 +40,13 @@ class TenantHelper {
     }
 
     /**
+     * Get the current Organization ID
+     */
+    public static function getOrganizationId() {
+        return self::$current_organization_id;
+    }
+
+    /**
      * Check if a table needs tenant isolation.
      */
     public static function isTenantTable($table_name) {

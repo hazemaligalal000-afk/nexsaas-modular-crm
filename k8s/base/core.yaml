@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexsaas-core
+  labels:
+    app: nexsaas-core
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nexsaas-core
+  template:
+    metadata:
+      labels:
+        app: nexsaas-core
+    spec:
+      containers:
+      - name: php-api
+        image: nexsaas/modular-core:latest
+        ports:
+        - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: nexsaas-secrets
+        - configMapRef:
+            name: nexsaas-config
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexsaas-core-svc
+spec:
+  selector:
+    app: nexsaas-core
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

@@ -29,7 +29,8 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "apply": "Apply"
   },
   "common": {
     "loading": "Loading...",
@@ -66,7 +67,9 @@
     "lastWeek": "Last Week",
     "thisMonth": "This Month",
     "lastMonth": "Last Month",
-    "custom": "Custom Range"
+    "custom": "Custom Range",
+    "from": "From",
+    "to": "To"
   },
   "time": {
     "just_now": "Just now",
@@ -107,6 +110,24 @@
       "lastQuarter": "Last Quarter",
       "lastYear": "Last Year",
       "custom": "Custom Range"
+    },
+    "charts": {
+      "dealsByStage": "Deals by Stage",
+      "leadCapture": "Lead Capture Trend",
+      "aiScoreDistribution": "AI Score Distribution",
+      "revenuePipeline": "Revenue Pipeline Trend",
+      "stage": "Stage",
+      "deals": "Deals",
+      "totalValue": "Total Value",
+      "date": "Date",
+      "leadsCount": "Leads",
+      "revenue": "Revenue",
+      "category": "Category",
+      "hot": "Hot",
+      "warm": "Warm",
+      "cold": "Cold",
+      "count": "Count",
+      "percentage": "Percentage"
     }
   },
   "contacts": {
@@ -221,5 +242,14 @@
     "english": "English",
     "arabic": "العربية",
     "changeLanguage": "Change language"
+  },
+  "landing": {
+    "hero": {
+      "headline": "AI-Powered Revenue Operating System",
+      "subheadline": "Close more deals with intelligent lead scoring, omnichannel inbox, and automated workflows",
+      "ctaTrial": "Start Free Trial",
+      "ctaDemo": "Watch Demo",
+      "imageAlt": "NexSaaS Dashboard Preview"
+    }
   }
 }

@@ -156,10 +156,39 @@ The system automatically applies RTL layout when Arabic is selected:
 
 - Sets `dir="rtl"` on `<html>` element
 - Sets `lang="ar-SA"` attribute
-- CSS should use logical properties for proper RTL support:
+- CSS uses logical properties for proper RTL support:
   - `margin-inline-start` instead of `margin-left`
   - `padding-inline-end` instead of `padding-right`
   - `text-align: start` instead of `text-align: left`
+  - `border-inline-start` instead of `border-left`
+  - `inset-inline-start` instead of `left`
+
+### Using Direction Hooks
+
+```tsx
+import { useDirection, useIsRTL } from '@/i18n/hooks';
+
+function MyComponent() {
+  const direction = useDirection(); // 'ltr' or 'rtl'
+  const isRTL = useIsRTL(); // boolean
+  
+  return (
+    <div>
+      <p>Current direction: {direction}</p>
+      {isRTL && <p>RTL mode is active</p>}
+    </div>
+  );
+}
+```
+
+### RTL CSS Guidelines
+
+See `frontend/src/styles/RTL_GUIDE.md` for comprehensive RTL implementation guide.
+
+**Key files:**
+- `frontend/src/styles/logical-properties.css` - Base logical property utilities
+- `frontend/src/styles/rtl.css` - RTL-specific overrides
+- `frontend/src/i18n/hooks/useDirection.ts` - Direction hooks
 
 ## Language Persistence
 

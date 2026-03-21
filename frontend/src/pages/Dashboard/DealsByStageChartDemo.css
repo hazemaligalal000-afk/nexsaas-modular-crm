@@ -1,0 +1,170 @@
+/**
+ * DealsByStageChart Demo Page Styles
+ */
+
+.deals-chart-demo {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--background-color, #f9fafb);
+  min-height: 100vh;
+}
+
+.demo-header {
+  margin-block-end: 2rem;
+  text-align: center;
+}
+
+.demo-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color, #111827);
+  margin: 0 0 0.5rem 0;
+}
+
+.demo-header p {
+  font-size: 1.125rem;
+  color: var(--text-secondary, #6b7280);
+  margin: 0;
+}
+
+.demo-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.demo-section {
+  background-color: var(--surface-color, #ffffff);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.demo-section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color, #111827);
+  margin: 0 0 1rem 0;
+}
+
+.demo-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.demo-section li {
+  padding: 0.5rem 0;
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.9375rem;
+}
+
+.clicked-stage-info {
+  padding: 1rem;
+  background-color: var(--primary-light, #eff6ff);
+  border-inline-start: 4px solid var(--primary-color, #3b82f6);
+  border-radius: 0.5rem;
+}
+
+.clicked-stage-info p {
+  margin: 0.5rem 0;
+  color: var(--text-color, #111827);
+}
+
+.clicked-stage-info .info-text {
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.code-block {
+  background-color: var(--code-bg, #1e293b);
+  color: var(--code-text, #e2e8f0);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .deals-chart-demo {
+  background-color: var(--background-dark, #1a1a1a);
+}
+
+[data-theme="dark"] .demo-header h1 {
+  color: var(--text-dark, #e5e5e5);
+}
+
+[data-theme="dark"] .demo-header p {
+  color: var(--text-dark-secondary, #9ca3af);
+}
+
+[data-theme="dark"] .demo-section {
+  background-color: var(--surface-dark, #2d2d2d);
+}
+
+[data-theme="dark"] .demo-section h2 {
+  color: var(--text-dark, #e5e5e5);
+}
+
+[data-theme="dark"] .demo-section li {
+  color: var(--text-dark-secondary, #9ca3af);
+}
+
+[data-theme="dark"] .clicked-stage-info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-inline-start-color: var(--primary-color, #3b82f6);
+}
+
+[data-theme="dark"] .clicked-stage-info p {
+  color: var(--text-dark, #e5e5e5);
+}
+
+[data-theme="dark"] .clicked-stage-info .info-text {
+  color: var(--text-dark-secondary, #9ca3af);
+}
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .deals-chart-demo {
+    padding: 1rem;
+  }
+
+  .demo-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .demo-header p {
+    font-size: 1rem;
+  }
+
+  .demo-section {
+    padding: 1rem;
+  }
+
+  .demo-section h2 {
+    font-size: 1.125rem;
+  }
+
+  .code-block {
+    font-size: 0.8125rem;
+    padding: 0.75rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .deals-chart-demo {
+    background-color: white;
+  }
+
+  .demo-section {
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
+    page-break-inside: avoid;
+  }
+}

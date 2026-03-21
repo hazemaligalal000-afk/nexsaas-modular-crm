@@ -1,0 +1,44 @@
+# NexSaaS Helm Values
+global:
+  image:
+    repository: nexsaas/modular-core
+    tag: latest
+  tenant:
+    domain: nexsaas.io
+
+postgresql:
+  auth:
+    database: nexsaas
+    username: nexsaas_admin
+
+redis:
+  auth:
+    enabled: true
+
+rabbitmq:
+  auth:
+    username: nexsaas_user
+
+# AI Engine Settings
+ai:
+  replicaCount: 2
+  resources:
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+  secrets:
+    anthropic_api_key: sk-ant-...
+
+# Core Settings
+core:
+  replicaCount: 3
+  ingress:
+    enabled: true
+    hosts:
+      - host: api.nexsaas.io
+        paths:
+          - path: /
+            pathType: ImplementationSpecific

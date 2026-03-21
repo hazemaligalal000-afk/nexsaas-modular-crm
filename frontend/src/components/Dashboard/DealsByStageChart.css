@@ -1,0 +1,173 @@
+/**
+ * Deals by Stage Chart Styles
+ * Requirements: 15, 18 - Interactive Charts with Mobile Responsive Design
+ * Uses CSS logical properties for RTL support
+ */
+
+.deals-by-stage-chart {
+  background-color: var(--surface-color, #ffffff);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.deals-by-stage-chart:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.chart-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color, #111827);
+  margin: 0 0 1rem 0;
+}
+
+/* Recharts custom styling */
+.chart-grid {
+  stroke: var(--border-color, #e5e7eb);
+  opacity: 0.5;
+}
+
+.chart-bar {
+  transition: opacity 0.2s ease;
+}
+
+.chart-bar:hover {
+  opacity: 0.8;
+}
+
+.chart-bar:focus-visible {
+  outline: 2px solid var(--primary-color, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Custom Tooltip Styles */
+.deals-chart-tooltip {
+  background-color: var(--surface-color, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.tooltip-stage {
+  font-weight: 600;
+  color: var(--text-color, #111827);
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.tooltip-count,
+.tooltip-value {
+  font-size: 0.8125rem;
+  color: var(--text-secondary, #6b7280);
+  margin: 0.25rem 0;
+}
+
+.tooltip-count strong,
+.tooltip-value strong {
+  color: var(--text-color, #111827);
+  font-weight: 600;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .deals-by-stage-chart {
+  background-color: var(--surface-dark, #2d2d2d);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .deals-by-stage-chart:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .chart-title {
+  color: var(--text-dark, #e5e5e5);
+}
+
+[data-theme="dark"] .chart-grid {
+  stroke: var(--border-dark, #404040);
+}
+
+[data-theme="dark"] .deals-chart-tooltip {
+  background-color: var(--surface-dark, #2d2d2d);
+  border-color: var(--border-dark, #404040);
+}
+
+[data-theme="dark"] .tooltip-stage {
+  color: var(--text-dark, #e5e5e5);
+}
+
+[data-theme="dark"] .tooltip-count,
+[data-theme="dark"] .tooltip-value {
+  color: var(--text-dark-secondary, #9ca3af);
+}
+
+[data-theme="dark"] .tooltip-count strong,
+[data-theme="dark"] .tooltip-value strong {
+  color: var(--text-dark, #e5e5e5);
+}
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .deals-by-stage-chart {
+    padding: 1rem;
+  }
+
+  .chart-title {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .deals-chart-tooltip {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .tooltip-stage {
+    font-size: 0.8125rem;
+  }
+
+  .tooltip-count,
+  .tooltip-value {
+    font-size: 0.75rem;
+  }
+}
+
+/* Tablet responsive */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .deals-by-stage-chart {
+    padding: 1.25rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .deals-by-stage-chart {
+    box-shadow: none;
+    border: 1px solid var(--border-color, #e5e7eb);
+    page-break-inside: avoid;
+  }
+
+  .chart-bar {
+    cursor: default !important;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .deals-by-stage-chart,
+  .chart-bar {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .deals-by-stage-chart {
+    border: 2px solid var(--text-color, #111827);
+  }
+
+  .chart-grid {
+    opacity: 1;
+  }
+}

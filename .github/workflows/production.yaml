@@ -1,0 +1,90 @@
+name: Production Core Deploy (Zero-Downtime)
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: nexsaas/core-platform
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Create Sentry Release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: nexsaas-enterprise
+          SENTRY_PROJECT: core-crm
+        with:
+          environment: production
+          version: ${{ github.sha }}
+
+  helm-deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Helm Charts
+        uses: actions/checkout@v4
+
+      - name: Setup Kubernetes context
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Deploy via Helm (Rolling Update)
+        uses: azure/setup-helm@v3
+        
+      - run: |
+          helm upgrade --install nexsaas-production ./k8s/helm/nexsaas \
+            --namespace nexsaas-live \
+            --create-namespace \
+            --set image.tag=sha-${{ github.sha }} \
+            --wait \
+            --timeout 10m
+
+      - name: Datadog Post-Deploy Event tracker
+        uses: DataDog/datadog-actions/event@v1
+        with:
+          api_key: ${{ secrets.DATADOG_API_KEY }}
+          title: "Production Deployment Success"
+          text: "NexSaaS version sha-${{ github.sha }} deployed successfully to production Kubernetes."
+          tags: "env:production,service:nexsaas-crm,layer:helm"

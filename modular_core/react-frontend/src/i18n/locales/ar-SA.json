@@ -1,0 +1,225 @@
+{
+  "app": {
+    "name": "نكس ساس",
+    "tagline": "نظام تشغيل الإيرادات بالذكاء الاصطناعي"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "crm": "إدارة العملاء",
+    "erp": "تخطيط موارد المؤسسة",
+    "accounting": "المحاسبة",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "import": "استيراد",
+    "refresh": "تحديث",
+    "submit": "إرسال",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "confirm": "تأكيد"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "warning": "تحذير",
+    "info": "معلومات",
+    "noData": "لا توجد بيانات متاحة",
+    "selectOption": "اختر خياراً",
+    "required": "مطلوب",
+    "optional": "اختياري",
+    "yes": "نعم",
+    "no": "لا",
+    "all": "الكل",
+    "none": "لا شيء",
+    "other": "أخرى"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "email": "عنوان البريد الإلكتروني غير صالح",
+    "phone": "رقم الهاتف غير صالح",
+    "url": "عنوان URL غير صالح",
+    "minLength": "الحد الأدنى للطول هو {{min}} حرفاً",
+    "maxLength": "الحد الأقصى للطول هو {{max}} حرفاً",
+    "min": "الحد الأدنى للقيمة هو {{min}}",
+    "max": "الحد الأقصى للقيمة هو {{max}}",
+    "pattern": "تنسيق غير صالح"
+  },
+  "date": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "tomorrow": "غداً",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "custom": "نطاق مخصص"
+  },
+  "time": {
+    "just_now": "الآن",
+    "minutes_ago": "منذ {{count}} دقيقة",
+    "hours_ago": "منذ {{count}} ساعة",
+    "days_ago": "منذ {{count}} يوم"
+  },
+  "pagination": {
+    "showing": "عرض {{from}} إلى {{to}} من {{total}} إدخال",
+    "page": "صفحة",
+    "of": "من",
+    "rowsPerPage": "صفوف لكل صفحة"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "وضع علامة مقروء على الكل",
+    "noNotifications": "لا توجد إشعارات",
+    "viewAll": "عرض الكل"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "signUp": "إنشاء حساب",
+    "rememberMe": "تذكرني"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "totalLeads": "إجمالي العملاء المحتملين",
+    "conversionRate": "معدل التحويل",
+    "revenuePipeline": "خط أنابيب الإيرادات",
+    "averageDealSize": "متوسط حجم الصفقة",
+    "dateRange": {
+      "last7Days": "آخر ٧ أيام",
+      "last30Days": "آخر ٣٠ يومًا",
+      "lastQuarter": "الربع الأخير",
+      "lastYear": "السنة الماضية",
+      "custom": "نطاق مخصص"
+    }
+  },
+  "contacts": {
+    "title": "جهات الاتصال",
+    "create": "إنشاء جهة اتصال",
+    "edit": "تعديل جهة الاتصال",
+    "delete": "حذف جهة الاتصال",
+    "merge": "دمج جهات الاتصال",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "company": "الشركة",
+    "position": "المنصب",
+    "status": "الحالة",
+    "source": "المصدر",
+    "owner": "المالك",
+    "tags": "الوسوم",
+    "notes": "الملاحظات",
+    "activities": "الأنشطة",
+    "deals": "الصفقات",
+    "timeline": "الجدول الزمني"
+  },
+  "leads": {
+    "title": "العملاء المحتملون",
+    "create": "إنشاء عميل محتمل",
+    "convert": "تحويل إلى جهة اتصال",
+    "score": "نقاط العميل المحتمل",
+    "status": "الحالة",
+    "source": "المصدر",
+    "capture": "التقاط عميل محتمل",
+    "import": "استيراد عملاء محتملين",
+    "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني أو الهاتف أو الشركة",
+    "filters": {
+      "all": "الكل",
+      "hot": "ساخن",
+      "warm": "دافئ",
+      "cold": "بارد",
+      "unassigned": "غير مخصص",
+      "myLeads": "عملائي المحتملون"
+    },
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "company": "الشركة",
+      "score": "النقاط",
+      "status": "الحالة",
+      "owner": "المالك",
+      "created": "تاريخ الإنشاء"
+    }
+  },
+  "deals": {
+    "title": "الصفقات",
+    "create": "إنشاء صفقة",
+    "value": "قيمة الصفقة",
+    "stage": "المرحلة",
+    "probability": "احتمالية الفوز",
+    "closeDate": "تاريخ الإغلاق المتوقع",
+    "pipeline": "خط الأنابيب",
+    "forecast": "التوقعات",
+    "won": "فاز",
+    "lost": "خسر",
+    "stale": "راكد",
+    "overdue": "متأخر"
+  },
+  "accounts": {
+    "title": "الحسابات",
+    "create": "إنشاء حساب",
+    "hierarchy": "التسلسل الهرمي للحساب",
+    "revenue": "الإيرادات السنوية",
+    "employees": "الموظفون",
+    "industry": "الصناعة",
+    "website": "الموقع الإلكتروني"
+  },
+  "inbox": {
+    "title": "صندوق الوارد",
+    "conversations": "المحادثات",
+    "messages": "الرسائل",
+    "reply": "رد",
+    "assign": "تعيين",
+    "resolve": "حل",
+    "reopen": "إعادة فتح",
+    "channels": {
+      "email": "البريد الإلكتروني",
+      "sms": "رسالة نصية",
+      "whatsapp": "واتساب",
+      "chat": "دردشة مباشرة",
+      "voip": "مكالمة هاتفية"
+    }
+  },
+  "workflows": {
+    "title": "سير العمل",
+    "create": "إنشاء سير عمل",
+    "trigger": "المشغل",
+    "actions": "الإجراءات",
+    "enable": "تفعيل",
+    "disable": "تعطيل",
+    "clone": "نسخ"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "preferences": "التفضيلات",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "numberFormat": "تنسيق الأرقام",
+    "numberFormatWestern": "غربي (0-9)",
+    "numberFormatArabic": "عربي هندي (٠-٩)",
+    "dateFormat": "تنسيق التاريخ",
+    "timezone": "المنطقة الزمنية"
+  },
+  "language": {
+    "english": "English",
+    "arabic": "العربية",
+    "changeLanguage": "تغيير اللغة"
+  }
+}

@@ -45,7 +45,7 @@ body {
 .sidebar {
     width: 260px;
     background: var(--bg-sidebar);
-    border-right: 1px solid var(--border-light);
+    border-inline-end: 1px solid var(--border-light);
     display: flex;
     flex-direction: column;
     z-index: 10;
@@ -155,7 +155,7 @@ body {
 
 .nav-item.active {
     background: linear-gradient(to right, rgba(99, 102, 241, 0.1), transparent);
-    border-left: 3px solid var(--accent-indigo);
+    border-inline-start: 3px solid var(--accent-indigo);
 }
 
 .nav-item.active svg {
@@ -330,7 +330,7 @@ body {
 .stat-pill .highlight {
     color: #fff;
     font-weight: 600;
-    margin-left: 4px;
+    margin-inline-start: 4px;
 }
 
 /* Kanban Board Layout */

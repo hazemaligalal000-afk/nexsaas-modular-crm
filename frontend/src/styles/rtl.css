@@ -1,0 +1,217 @@
+/**
+ * RTL Layout Support
+ * CSS overrides for Right-to-Left languages (Arabic)
+ * Requirements: 11
+ * 
+ * This file contains RTL-specific overrides for components that need special handling
+ * Most layout should use logical properties (margin-inline-start, etc.) in the base CSS
+ */
+
+/* RTL-specific overrides for components that need mirroring */
+[dir="rtl"] {
+  /* Reverse gradient directions for RTL */
+  --gradient-direction: to left;
+}
+
+[dir="ltr"] {
+  --gradient-direction: to right;
+}
+
+/* Brand logo - don't mirror */
+[dir="rtl"] .logo {
+  transform: none;
+}
+
+/* Navigation active indicator gradient */
+[dir="rtl"] .nav-item.active {
+  background: linear-gradient(to left, rgba(99, 102, 241, 0.1), transparent);
+}
+
+/* Search bar icon positioning */
+[dir="rtl"] .search-bar {
+  flex-direction: row-reverse;
+}
+
+/* Button groups - reverse order */
+[dir="rtl"] .topbar-actions,
+[dir="rtl"] .cta-buttons,
+[dir="rtl"] .button-group {
+  flex-direction: row-reverse;
+}
+
+/* Card header - reverse flex direction */
+[dir="rtl"] .card-header {
+  flex-direction: row-reverse;
+}
+
+/* Kanban board - enable RTL scrolling */
+[dir="rtl"] .kanban-board {
+  direction: ltr; /* Keep horizontal scroll LTR */
+}
+
+[dir="rtl"] .kanban-column {
+  direction: rtl; /* But content inside is RTL */
+}
+
+/* Dropdown menus - position on left in RTL */
+[dir="rtl"] .dropdown-menu {
+  right: auto;
+  left: 0;
+}
+
+/* Chevron icons - flip for RTL */
+[dir="rtl"] .chevron,
+[dir="rtl"] .arrow-icon {
+  transform: scaleX(-1);
+}
+
+/* Don't flip these icons */
+[dir="rtl"] .logo,
+[dir="rtl"] .brand-icon,
+[dir="rtl"] .avatar,
+[dir="rtl"] .image-icon {
+  transform: none;
+}
+
+/* Form layouts - labels on right in RTL */
+[dir="rtl"] .form-field {
+  flex-direction: row-reverse;
+}
+
+/* Breadcrumb separators */
+[dir="rtl"] .breadcrumb-separator {
+  transform: scaleX(-1);
+}
+
+/* Modal close button */
+[dir="rtl"] .modal-close {
+  right: auto;
+  left: 1rem;
+}
+
+/* Notification positioning */
+[dir="rtl"] .notification-container {
+  right: auto;
+  left: 1rem;
+}
+
+/* Sidebar positioning for mobile */
+@media (max-width: 768px) {
+  [dir="rtl"] .sidebar {
+    right: auto;
+    left: 0;
+  }
+  
+  [dir="rtl"] .sidebar.collapsed {
+    transform: translateX(-100%);
+  }
+}
+
+/* Chart axes - flip for RTL */
+[dir="rtl"] .recharts-cartesian-axis-tick-value {
+  text-anchor: start;
+}
+
+[dir="rtl"] .recharts-legend-wrapper {
+  direction: rtl;
+}
+
+/* Table alignment */
+[dir="rtl"] table {
+  text-align: start;
+}
+
+[dir="rtl"] th,
+[dir="rtl"] td {
+  text-align: start;
+}
+
+/* Pagination */
+[dir="rtl"] .pagination {
+  flex-direction: row-reverse;
+}
+
+/* Progress bars */
+[dir="rtl"] .progress-bar {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .progress-bar-fill {
+  transform: scaleX(-1);
+}
+
+/* Tooltips */
+[dir="rtl"] .tooltip {
+  text-align: start;
+}
+
+/* List items with icons */
+[dir="rtl"] .list-item-icon {
+  margin-inline-start: 0;
+  margin-inline-end: 0.5rem;
+}
+
+/* Badge positioning */
+[dir="rtl"] .badge {
+  right: auto;
+  left: 0;
+}
+
+/* Stepper/Wizard components */
+[dir="rtl"] .stepper {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .stepper-connector {
+  transform: scaleX(-1);
+}
+
+/* Tabs */
+[dir="rtl"] .tabs {
+  flex-direction: row-reverse;
+}
+
+/* Accordion icons */
+[dir="rtl"] .accordion-icon {
+  margin-inline-start: 0;
+  margin-inline-end: auto;
+}
+
+/* Loading spinner - don't flip */
+[dir="rtl"] .spinner,
+[dir="rtl"] .loading-icon {
+  transform: none;
+}
+
+/* Social media icons - don't flip */
+[dir="rtl"] .social-icon {
+  transform: none;
+}
+
+/* Number inputs - keep LTR for numbers */
+[dir="rtl"] input[type="number"],
+[dir="rtl"] input[type="tel"] {
+  direction: ltr;
+  text-align: end;
+}
+
+/* Email inputs - keep LTR */
+[dir="rtl"] input[type="email"],
+[dir="rtl"] input[type="url"] {
+  direction: ltr;
+  text-align: start;
+}
+
+/* Code blocks - keep LTR */
+[dir="rtl"] code,
+[dir="rtl"] pre {
+  direction: ltr;
+  text-align: start;
+}
+
+/* Timestamps and dates */
+[dir="rtl"] .timestamp,
+[dir="rtl"] .date-display {
+  direction: ltr;
+  text-align: end;
+}

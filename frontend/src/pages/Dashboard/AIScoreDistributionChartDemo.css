@@ -1,0 +1,126 @@
+/**
+ * AI Score Distribution Chart Demo Styles
+ */
+
+.demo-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--background, #f9fafb);
+  color: var(--text-primary, #111827);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.demo-container.dark {
+  --background: #111827;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --card-background: #1f2937;
+  --border-color: #374151;
+}
+
+.demo-header {
+  margin-bottom: 2rem;
+}
+
+.demo-header h1 {
+  margin: 0 0 1rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.demo-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.demo-button {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.demo-button:hover {
+  background: var(--primary-hover, #2563eb);
+}
+
+.demo-content {
+  display: grid;
+  gap: 2rem;
+}
+
+.demo-section {
+  background: var(--card-background, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.demo-section h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.demo-section p {
+  margin: 0 0 1rem 0;
+  color: var(--text-secondary, #6b7280);
+}
+
+.demo-section ul {
+  margin: 0;
+  padding-inline-start: 1.5rem;
+  list-style: none;
+}
+
+.demo-section li {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem;
+  text-align: start;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.data-table th {
+  font-weight: 600;
+  background: var(--background, #f9fafb);
+}
+
+.data-table tbody tr:hover {
+  background: var(--background, #f9fafb);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .demo-container {
+    padding: 1rem;
+  }
+
+  .demo-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .demo-controls {
+    flex-direction: column;
+  }
+
+  .demo-button {
+    width: 100%;
+  }
+}

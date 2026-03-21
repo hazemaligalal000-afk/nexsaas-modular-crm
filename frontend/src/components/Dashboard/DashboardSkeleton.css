@@ -1,0 +1,247 @@
+/**
+ * Dashboard Skeleton Styles
+ * Requirements: 19 - Loading Skeletons Instead of Spinners
+ * Animated shimmer effect with RTL support
+ */
+
+.dashboard-skeleton {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes shimmer-rtl {
+  0% {
+    background-position: 1000px 0;
+  }
+  100% {
+    background-position: -1000px 0;
+  }
+}
+
+.skeleton-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-title {
+  width: 200px;
+  height: 32px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base, #f0f0f0) 0%,
+    var(--skeleton-highlight, #f8f8f8) 50%,
+    var(--skeleton-base, #f0f0f0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.375rem;
+}
+
+[dir="rtl"] .skeleton-title {
+  animation: shimmer-rtl 1.5s infinite;
+}
+
+.skeleton-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.skeleton-button {
+  width: 120px;
+  height: 36px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base, #f0f0f0) 0%,
+    var(--skeleton-highlight, #f8f8f8) 50%,
+    var(--skeleton-base, #f0f0f0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.375rem;
+}
+
+[dir="rtl"] .skeleton-button {
+  animation: shimmer-rtl 1.5s infinite;
+}
+
+.skeleton-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.skeleton-kpi-card {
+  padding: 1.5rem;
+  background-color: var(--surface-color, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-kpi-label {
+  width: 60%;
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base, #f0f0f0) 0%,
+    var(--skeleton-highlight, #f8f8f8) 50%,
+    var(--skeleton-base, #f0f0f0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+}
+
+[dir="rtl"] .skeleton-kpi-label {
+  animation: shimmer-rtl 1.5s infinite;
+}
+
+.skeleton-kpi-value {
+  width: 80%;
+  height: 32px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base, #f0f0f0) 0%,
+    var(--skeleton-highlight, #f8f8f8) 50%,
+    var(--skeleton-base, #f0f0f0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+}
+
+[dir="rtl"] .skeleton-kpi-value {
+  animation: shimmer-rtl 1.5s infinite;
+}
+
+.skeleton-kpi-trend {
+  width: 40%;
+  height: 20px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base, #f0f0f0) 0%,
+    var(--skeleton-highlight, #f8f8f8) 50%,
+    var(--skeleton-base, #f0f0f0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+}
+
+[dir="rtl"] .skeleton-kpi-trend {
+  animation: shimmer-rtl 1.5s infinite;
+}
+
+.skeleton-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.skeleton-chart {
+  padding: 1.5rem;
+  background-color: var(--surface-color, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-chart-title {
+  width: 50%;
+  height: 24px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base, #f0f0f0) 0%,
+    var(--skeleton-highlight, #f8f8f8) 50%,
+    var(--skeleton-base, #f0f0f0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+}
+
+[dir="rtl"] .skeleton-chart-title {
+  animation: shimmer-rtl 1.5s infinite;
+}
+
+.skeleton-chart-content {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base, #f0f0f0) 0%,
+    var(--skeleton-highlight, #f8f8f8) 50%,
+    var(--skeleton-base, #f0f0f0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.375rem;
+}
+
+[dir="rtl"] .skeleton-chart-content {
+  animation: shimmer-rtl 1.5s infinite;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .dashboard-skeleton {
+    padding: 1rem;
+  }
+  
+  .skeleton-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .skeleton-charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .skeleton-filters {
+    flex-direction: column;
+  }
+  
+  .skeleton-button {
+    width: 100%;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .skeleton-title,
+[data-theme="dark"] .skeleton-button,
+[data-theme="dark"] .skeleton-kpi-label,
+[data-theme="dark"] .skeleton-kpi-value,
+[data-theme="dark"] .skeleton-kpi-trend,
+[data-theme="dark"] .skeleton-chart-title,
+[data-theme="dark"] .skeleton-chart-content {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-dark-base, #2d2d2d) 0%,
+    var(--skeleton-dark-highlight, #3d3d3d) 50%,
+    var(--skeleton-dark-base, #2d2d2d) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+[data-theme="dark"] .skeleton-kpi-card,
+[data-theme="dark"] .skeleton-chart {
+  background-color: var(--surface-dark, #2d2d2d);
+  border-color: var(--border-dark, #404040);
+}

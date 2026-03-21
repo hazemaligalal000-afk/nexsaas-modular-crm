@@ -63,4 +63,10 @@ i18n.on('languageChanged', (lng) => {
   document.documentElement.setAttribute('lang', lng);
 });
 
+// Set initial dir attribute on load
+const initialLang = i18n.language || 'en';
+const initialDir = initialLang === 'ar' ? 'rtl' : 'ltr';
+document.documentElement.setAttribute('dir', initialDir);
+document.documentElement.setAttribute('lang', initialLang);
+
 export default i18n;

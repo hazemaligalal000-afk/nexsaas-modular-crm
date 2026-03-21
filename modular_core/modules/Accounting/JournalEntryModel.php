@@ -89,6 +89,9 @@ class JournalEntryModel extends BaseModel
                 $line['cr_value_base'] = ($line['cr_value'] ?? 0) * $rate;
 
                 $this->insertLine($line);
+                
+                // Real-time balance update (Rule 7.2)
+                $this->recordBalanceImpact($line);
             }
 
             // Commit transaction
@@ -100,6 +103,36 @@ class JournalEntryModel extends BaseModel
             $this->db->FailTrans();
             throw new \RuntimeException("Failed to create journal entry: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Update the period-based account balance (Batch D)
+     */
+    private function recordBalanceImpact(array $line): void
+    {
+        $sql = "INSERT INTO account_balances 
+                (tenant_id, company_code, account_code, currency_code, fin_period, 
+                 total_dr, total_cr, total_dr_base, total_cr_base)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (tenant_id, company_code, account_code, currency_code, fin_period, deleted_at)
+                DO UPDATE SET 
+                    total_dr = account_balances.total_dr + EXCLUDED.total_dr,
+                    total_cr = account_balances.total_cr + EXCLUDED.total_cr,
+                    total_dr_base = account_balances.total_dr_base + EXCLUDED.total_dr_base,
+                    total_cr_base = account_balances.total_cr_base + EXCLUDED.total_cr_base,
+                    updated_at = NOW()";
+        
+        $this->db->Execute($sql, [
+            $this->tenantId, 
+            $line['company_code'], 
+            $line['account_code'], 
+            $line['currency_code'] ?? '01', 
+            $line['fin_period'],
+            $line['dr_value'] ?? 0,
+            $line['cr_value'] ?? 0,
+            $line['dr_value_base'] ?? 0,
+            $line['cr_value_base'] ?? 0
+        ]);
     }
 
     /**
@@ -210,7 +243,24 @@ class JournalEntryModel extends BaseModel
                 break;
         }
 
-        return $this->update($headerId, $data);
+        $success = $this->update($headerId, $data);
+        
+        if ($success) {
+            $this->recordAuditLog($headerId, $status, $userId);
+        }
+
+        return $success;
+    }
+
+    /**
+     * Record interaction in audit log (Batch E)
+     */
+    private function recordAuditLog(int $headerId, string $action, string $userId): void
+    {
+        $sql = "INSERT INTO journal_audit_log (je_header_id, action, performed_by, ip_address)
+                VALUES (?, ?, ?, ?)";
+        
+        $this->db->Execute($sql, [$headerId, $action, $userId, $_SERVER['REMOTE_ADDR'] ?? 'system']);
     }
 
     /**

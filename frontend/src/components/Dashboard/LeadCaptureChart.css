@@ -1,0 +1,109 @@
+/**
+ * Lead Capture Chart Styles
+ * Responsive, RTL-compatible, dark mode support
+ */
+
+.lead-capture-chart {
+  background: var(--surface-color, #ffffff);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.lead-capture-chart:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lead-capture-chart .chart-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #1f2937);
+}
+
+/* Tooltip Styles */
+.lead-capture-tooltip {
+  background: var(--surface-color, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lead-capture-tooltip .tooltip-date {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #1f2937);
+}
+
+.lead-capture-tooltip .tooltip-count {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+.lead-capture-tooltip .tooltip-count strong {
+  color: var(--primary-color, #3b82f6);
+  font-weight: 600;
+}
+
+/* Chart Grid Styling */
+.lead-capture-chart .chart-grid {
+  stroke: var(--border-color, #e5e7eb);
+  opacity: 0.5;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .lead-capture-chart {
+    background: var(--surface-color, #2d2d2d);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .lead-capture-chart:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .lead-capture-chart .chart-title {
+    color: var(--text-primary, #e5e5e5);
+  }
+
+  .lead-capture-tooltip {
+    background: var(--surface-color, #2d2d2d);
+    border-color: var(--border-color, #404040);
+  }
+
+  .lead-capture-tooltip .tooltip-date {
+    color: var(--text-primary, #e5e5e5);
+  }
+
+  .lead-capture-tooltip .tooltip-count {
+    color: var(--text-secondary, #9ca3af);
+  }
+
+  .lead-capture-chart .chart-grid {
+    stroke: var(--border-color, #404040);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .lead-capture-chart {
+    padding: 1rem;
+  }
+
+  .lead-capture-chart .chart-title {
+    font-size: 1rem;
+  }
+}
+
+/* RTL Support - handled by logical properties in parent */
+[dir="rtl"] .lead-capture-chart .chart-title {
+  text-align: right;
+}
+
+[dir="ltr"] .lead-capture-chart .chart-title {
+  text-align: left;
+}

@@ -2,40 +2,39 @@
 
 namespace ModularCore\Modules\Platform\Billing;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Core\BaseController;
+use Core\Database;
 use ModularCore\Modules\Platform\Billing\StripeService;
-use App\Models\Tenant;
-use Illuminate\Support\Facades\Log;
-use Stripe\Exception\SignatureVerificationException;
+use Exception;
 
-class WebhookHandler extends Controller
+class WebhookHandler extends BaseController
 {
     private $stripe;
 
-    public function __construct(StripeService $stripe)
+    public function __construct()
     {
-        $this->stripe = $stripe;
+        $this->stripe = new StripeService();
     }
 
     /**
-     * Handle incoming Stripe webhooks POST /api/webhooks/stripe
+     * Handle incoming Stripe webhooks POST
      */
-    public function handle(Request $request)
+    public function handle()
     {
-        $payload = $request->getContent();
-        $sigHeader = $request->header('Stripe-Signature');
+        $payload = file_get_contents('php://input');
+        $headers = apache_request_headers();
+        $sigHeader = $headers['Stripe-Signature'] ?? '';
 
         # 1. Verify Webhook Signature
         try {
             $event = $this->stripe->constructEvent($payload, $sigHeader);
-        } catch (SignatureVerificationException $e) {
-            return response()->json(['error' => 'Invalid signature'], 400);
+        } catch (Exception $e) {
+            return $this->respond(null, 'Invalid signature: ' . $e->getMessage(), 400);
         }
 
-        # 2. Prevent Duplicate Events (Idempotency)
+        # 2. Prevent Duplicate Events
         if ($this->isEventProcessed($event->id)) {
-            return response()->json(['success' => true, 'idempotent' => true]);
+            return $this->respond(['idempotent' => true]);
         }
 
         # 3. Route to specific handler
@@ -52,14 +51,12 @@ class WebhookHandler extends Controller
             case 'customer.subscription.deleted':
                 $this->handleSubscriptionDeleted($event->data->object);
                 break;
-            default:
-                Log::info("Unhandled Stripe webhook: " . $event->type);
         }
 
         # 4. Mark as processed
         $this->markAsProcessed($event->id, $event->type);
 
-        return response()->json(['success' => true]);
+        return $this->respond(['success' => true]);
     }
 
     private function handleCheckoutCompleted($session)
@@ -68,58 +65,47 @@ class WebhookHandler extends Controller
         $tier = $session->metadata->tier;
         $subscriptionId = $session->subscription;
         
-        $tenant = Tenant::find($tenantId);
-        if ($tenant) {
-            $tenant->update([
-                'stripe_subscription_id' => $subscriptionId,
-                'stripe_customer_id'     => $session->customer,
-                'current_tier'           => $tier,
-                'subscription_status'    => 'active',
-                'access_locked_at'       => null
-            ]);
-            Log::info("Subscription activated for Tenant: " . $tenantId);
-        }
+        Database::query(
+            "UPDATE tenants SET stripe_subscription_id = ?, stripe_customer_id = ?, current_tier = ?, subscription_status = 'active' WHERE id = ?",
+            [$subscriptionId, $session->customer, $tier, $tenantId]
+        );
     }
 
     private function handlePaymentSucceeded($invoice)
     {
-        $tenant = Tenant::where('stripe_customer_id', $invoice->customer)->first();
-        if ($tenant) {
-            $tenant->update([
-                'subscription_status' => 'active',
-                'access_locked_at'    => null,
-                'grace_period_end'    => null
-            ]);
-            Log::info("Payment succeeded for Tenant: " . $tenant->id);
-        }
+        Database::query(
+            "UPDATE tenants SET subscription_status = 'active', access_locked_at = NULL WHERE stripe_customer_id = ?",
+            [$invoice->customer]
+        );
     }
 
     private function handlePaymentFailed($invoice)
     {
-        $tenant = Tenant::where('stripe_customer_id', $invoice->customer)->first();
-        if ($tenant) {
-            $tenant->update([
-                'subscription_status' => 'past_due',
-                'grace_period_end'    => now()->addDays(7)
-            ]);
-            Log::warning("Payment failed! Grace period started for Tenant: " . $tenant->id);
-            // Trigger Notification Job Here
-        }
+        Database::query(
+            "UPDATE tenants SET subscription_status = 'past_due' WHERE stripe_customer_id = ?",
+            [$invoice->customer]
+        );
     }
 
     private function handleSubscriptionDeleted($subscription)
     {
-        $tenant = Tenant::where('stripe_subscription_id', $subscription->id)->first();
-        if ($tenant) {
-            $tenant->update([
-                'subscription_status' => 'canceled',
-                'access_locked_at'    => now()
-            ]);
-            Log::error("Subscription canceled! Tenant locked: " . $tenant->id);
-        }
+        Database::query(
+            "UPDATE tenants SET subscription_status = 'canceled', access_locked_at = NOW() WHERE stripe_subscription_id = ?",
+            [$subscription->id]
+        );
     }
 
-    // --- Helper Methods ---
-    private function isEventProcessed($eventId) { return \DB::table('stripe_webhook_history')->where('event_id', $eventId)->exists(); }
-    private function markAsProcessed($eventId, $type) { \DB::table('stripe_webhook_history')->insert(['event_id' => $eventId, 'type' => $type, 'processed_at' => now()]); }
+    private function isEventProcessed($eventId) 
+    { 
+        $stmt = Database::query("SELECT 1 FROM stripe_webhook_history WHERE event_id = ?", [$eventId]);
+        return $stmt->fetch() !== false;
+    }
+
+    private function markAsProcessed($eventId, $type) 
+    { 
+        Database::query(
+            "INSERT INTO stripe_webhook_history (event_id, event_type, processed_at) VALUES (?, ?, NOW())",
+            [$eventId, $type]
+        ); 
+    }
 }

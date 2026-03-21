@@ -1,0 +1,225 @@
+{
+  "app": {
+    "name": "NexSaaS",
+    "tagline": "AI Revenue Operating System"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "crm": "CRM",
+    "erp": "ERP",
+    "accounting": "Accounting",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "refresh": "Refresh",
+    "submit": "Submit",
+    "approve": "Approve",
+    "reject": "Reject",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "confirm": "Confirm"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "noData": "No data available",
+    "selectOption": "Select an option",
+    "required": "Required",
+    "optional": "Optional",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "none": "None",
+    "other": "Other"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Invalid email address",
+    "phone": "Invalid phone number",
+    "url": "Invalid URL",
+    "minLength": "Minimum length is {{min}} characters",
+    "maxLength": "Maximum length is {{max}} characters",
+    "min": "Minimum value is {{min}}",
+    "max": "Maximum value is {{max}}",
+    "pattern": "Invalid format"
+  },
+  "date": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "lastWeek": "Last Week",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "custom": "Custom Range"
+  },
+  "time": {
+    "just_now": "Just now",
+    "minutes_ago": "{{count}} minutes ago",
+    "hours_ago": "{{count}} hours ago",
+    "days_ago": "{{count}} days ago"
+  },
+  "pagination": {
+    "showing": "Showing {{from}} to {{to}} of {{total}} entries",
+    "page": "Page",
+    "of": "of",
+    "rowsPerPage": "Rows per page"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "viewAll": "View all"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "signUp": "Sign up",
+    "rememberMe": "Remember me"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalLeads": "Total Leads",
+    "conversionRate": "Conversion Rate",
+    "revenuePipeline": "Revenue Pipeline",
+    "averageDealSize": "Average Deal Size",
+    "dateRange": {
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days",
+      "lastQuarter": "Last Quarter",
+      "lastYear": "Last Year",
+      "custom": "Custom Range"
+    }
+  },
+  "contacts": {
+    "title": "Contacts",
+    "create": "Create Contact",
+    "edit": "Edit Contact",
+    "delete": "Delete Contact",
+    "merge": "Merge Contacts",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "company": "Company",
+    "position": "Position",
+    "status": "Status",
+    "source": "Source",
+    "owner": "Owner",
+    "tags": "Tags",
+    "notes": "Notes",
+    "activities": "Activities",
+    "deals": "Deals",
+    "timeline": "Timeline"
+  },
+  "leads": {
+    "title": "Leads",
+    "create": "Create Lead",
+    "convert": "Convert to Contact",
+    "score": "Lead Score",
+    "status": "Status",
+    "source": "Source",
+    "capture": "Capture Lead",
+    "import": "Import Leads",
+    "searchPlaceholder": "Search by name, email, phone, or company",
+    "filters": {
+      "all": "All",
+      "hot": "Hot",
+      "warm": "Warm",
+      "cold": "Cold",
+      "unassigned": "Unassigned",
+      "myLeads": "My Leads"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "company": "Company",
+      "score": "Score",
+      "status": "Status",
+      "owner": "Owner",
+      "created": "Created"
+    }
+  },
+  "deals": {
+    "title": "Deals",
+    "create": "Create Deal",
+    "value": "Deal Value",
+    "stage": "Stage",
+    "probability": "Win Probability",
+    "closeDate": "Expected Close Date",
+    "pipeline": "Pipeline",
+    "forecast": "Forecast",
+    "won": "Won",
+    "lost": "Lost",
+    "stale": "Stale",
+    "overdue": "Overdue"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "create": "Create Account",
+    "hierarchy": "Account Hierarchy",
+    "revenue": "Annual Revenue",
+    "employees": "Employees",
+    "industry": "Industry",
+    "website": "Website"
+  },
+  "inbox": {
+    "title": "Inbox",
+    "conversations": "Conversations",
+    "messages": "Messages",
+    "reply": "Reply",
+    "assign": "Assign",
+    "resolve": "Resolve",
+    "reopen": "Reopen",
+    "channels": {
+      "email": "Email",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "chat": "Live Chat",
+      "voip": "Phone Call"
+    }
+  },
+  "workflows": {
+    "title": "Workflows",
+    "create": "Create Workflow",
+    "trigger": "Trigger",
+    "actions": "Actions",
+    "enable": "Enable",
+    "disable": "Disable",
+    "clone": "Clone"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "language": "Language",
+    "theme": "Theme",
+    "numberFormat": "Number Format",
+    "numberFormatWestern": "Western (0-9)",
+    "numberFormatArabic": "Arabic-Indic (٠-٩)",
+    "dateFormat": "Date Format",
+    "timezone": "Timezone"
+  },
+  "language": {
+    "english": "English",
+    "arabic": "العربية",
+    "changeLanguage": "Change language"
+  }
+}

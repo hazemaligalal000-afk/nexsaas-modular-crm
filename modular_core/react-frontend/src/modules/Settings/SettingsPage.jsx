@@ -10,6 +10,7 @@ export default function SettingsPage() {
 
   const TABS = [
     { id: 'profile', label: 'Tenant Profile', icon: '🏢' },
+    { id: 'security', label: 'Security & RBAC', icon: '🛡️' },
     { id: 'billing', label: 'Global Billing', icon: '💳' },
     { id: 'localization', label: 'Localization', icon: '🌍' },
     { id: 'developers', label: 'Ecosystem & API', icon: '🔗' }
@@ -58,16 +59,46 @@ export default function SettingsPage() {
              </div>
            )}
 
+           {activeTab === 'security' && (
+             <div>
+                <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '8px' }}>Security & RBAC.</h2>
+                <p style={{ color: '#64748b', marginBottom: '40px' }}>Control role-based permissions and tenant security policies.</p>
+                <div style={{ background: '#1e3a5f33', borderRadius: '24px', padding: '32px', border: '1px solid #1e3a5f' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                      <span style={{ fontWeight: '800' }}>Platform Roles</span>
+                      <span style={{ color: '#3b82f6', cursor: 'pointer', fontWeight: '800' }}>+ Create Role</span>
+                   </div>
+                   {['Owner', 'Admin', 'Sales Agent', 'Finance Manager', 'Support'].map(role => (
+                      <div key={role} style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid #1e3a5f' }}>
+                         <span style={{ fontWeight: '600' }}>{role}</span>
+                         <span style={{ fontSize: '12px', color: '#64748b' }}>Configure Permissions →</span>
+                      </div>
+                   ))}
+                </div>
+             </div>
+           )}
+
            {activeTab === 'localization' && (
              <div>
                 <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '8px' }}>Global Localization.</h2>
-                <p style={{ color: '#64748b', marginBottom: '40px' }}>Set your preferred interface language and regional time zones.</p>
-                <div onClick={handleLanguageToggle} style={{ padding: '32px', background: '#1e3a5f33', border: '2px solid #3b82f6', borderRadius: '24px', cursor: 'pointer', textAlign: 'center' }}>
-                   <div style={{ fontSize: '32px', marginBottom: '16px' }}>{isRtl ? '🇸🇦' : '🌐'}</div>
-                   <div style={{ fontWeight: '900', fontSize: '20px' }}>Switch to {isRtl ? 'English Interface' : 'Arabic Interface (RTL)'}</div>
-                   <p style={{ color: '#475569', fontSize: '14px', marginTop: '8px' }}>Instant UI flipping and translation reload.</p>
+                <p style={{ color: '#64748b', marginBottom: '40px' }}>Set your preferred interface language and regional tax rules (ZATCA/GCC).</p>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>
+                   <div onClick={handleLanguageToggle} style={{ padding: '32px', background: '#1e3a5f33', border: '2px solid #3b82f6', borderRadius: '24px', cursor: 'pointer', textAlign: 'center' }}>
+                      <div style={{ fontSize: '32px', marginBottom: '16px' }}>{isRtl ? '🇸🇦' : '🌐'}</div>
+                      <div style={{ fontWeight: '900', fontSize: '20px' }}>Switch Language</div>
+                   </div>
+                   <div style={{ padding: '32px', background: '#1e3a5f33', border: '1.5px solid #1e3a5f', borderRadius: '24px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '900', color: '#475569', display: 'block', marginBottom: '12px' }}>TARGET REGION</label>
+                      <select style={{ width: '100%', padding: '12px', background: '#0b1628', border: '1px solid #1e3a5f', color: '#fff', borderRadius: '8px' }}>
+                         <option>Saudi Arabia (15% VAT)</option>
+                         <option>United Arab Emirates (5% VAT)</option>
+                         <option>Qatar (No VAT / 5%)</option>
+                         <option>Oman</option>
+                      </select>
+                   </div>
                 </div>
-           </div>
+            </div>
            )}
 
            {activeTab === 'developers' && (
