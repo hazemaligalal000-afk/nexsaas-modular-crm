@@ -131,7 +131,7 @@ This implementation plan transforms the functional NexSaaS platform into a marke
     - Implement click handler for drill-down
     - _Requirements: 15_
   
-  - [-] 7.4 Implement area chart for revenue pipeline trend
+  - [x] 7.4 Implement area chart for revenue pipeline trend
     - Create RevenuePipelineChart component using Recharts AreaChart
     - Add gradient fill for visual appeal
     - Format Y-axis with currency formatter
